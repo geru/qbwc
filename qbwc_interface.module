@@ -1,0 +1,197 @@
+<?php
+// $Id:$
+
+/**
+ * @file
+ * QBWC Interface.
+ *
+ * Direct interface to QB Webconnector via PHP soapserver at customizable endpoint
+ *
+ * Generates WSDL file at [endpoint URL].WSDL
+ * Generates WebConnector .QWC with correct settings to connect to Drupal site
+ * Generates random initial endpoint, username, and password combination and allows customization through user interface
+ * Provides hooks for other modules to handle incoming and outgoing QBXML requests and responses. See qbwc_interface.api.php for details
+ */
+
+
+require_once 'qbwc_interface.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function qbwc_interface_menu() {
+  $endpoint = variable_get(QBWC_INT_ENDPT, NULL);
+
+  $items[$endpoint] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'Access endpoint for Quickbooks Web Connector ',
+    'page callback' => 'qbwc_interface_endpoint',
+    'file' => 'qbwc_interface_endpoint.inc',
+    'file path' => drupal_get_path('module', 'qbwc_interface'),
+    'access arguments' => array('access content'),
+  );
+  $items[$endpoint . '.wsdl'] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'WSDL generator for Quickbooks Web Connector ',
+    'page callback' => 'qbwc_interface_wsdl_output',
+    'access arguments' => array('access content'),
+    'file' => 'qbwc_interface.wsdl.inc',
+    'file path' => drupal_get_path('module', 'qbwc_interface'),
+  );
+  // Make "Foo settings" appear on the admin Config page
+  $items['admin/config/enterprise'] = array(
+    'title' => 'Enterprise',
+    'type' => MENU_NORMAL_ITEM,
+    // Page callback, etc. need to be added here.
+    'description' => t('Accounting system configuration') , 'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page', // we should implement this function in system.admin.inc file
+    'access arguments' => array('access administration pages'),
+    'file' => 'system.admin.inc', // don't forget to add the file and path
+    'file path' => drupal_get_path('module', 'system'),
+    'position' => 'right',
+  );
+  $items['admin/config/enterprise/qbwc'] = array(
+    'title' => 'Quickbooks WebConnector',
+    'type' => MENU_NORMAL_ITEM,
+    'description' => 'Set access parameters for Quickbooks Web Connector interface',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('qbwc_interface_admin_settings_form'),
+    'access arguments' => array('access administration pages'),
+    'file' => 'qbwc_interface.admin.inc',
+    'file path' => drupal_get_path('module', 'qbwc_interface'),
+  );
+  $items['admin/config/enterprise/qbwc/qwc_generator'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'QWC generator for Quickbooks Web Connector ',
+    'description' => 'Generate a .QWC file for the Quickbooks Web Connector to access the endpoint',
+    'page callback' => 'qbwc_interface_qwc_output',
+    'access arguments' => array('access administration pages'),
+    'file' => 'qbwc_interface.admin.inc',
+    'file path' => drupal_get_path('module', 'qbwc_interface'),
+  );
+  
+  return $items;
+}
+
+/**
+ * Implements hook_help().
+ */
+function qbwc_interface_help($path, $arg) {
+  switch ($path) {
+    case 'admin/config/enterprise/qbwc':
+      return t( 'Specify the endpoint, username and password used by the Quickbooks Web Connector in its .QWC file.
+      This user / password combination is not related to Drupal nor Quickbooks users or passwords.
+      They are set here and in the QWC file independently of Drupal and Quickbooks users and passwords.');
+
+    case 'admin/help#qbwc_interface':
+      $output = '<p>' . t('QBWC Interface is the intermediary between Drupal and the Quickbooks Web Connector.' .
+          'The username and password set in this interface correspond to the username and password' .
+          "set in the Web Connector's .QWC file. The interface generates .WSDL and corresponding .QWC files") . '</p>';
+      return $output;
+  }
+}
+
+
+/*
+ * Create GUID's from: http://php.net/manual/en/function.com-create-guid.php
+ */
+function GUID() {
+  if (function_exists('com_create_guid') === TRUE) {
+    return trim(com_create_guid(), '{}');
+  }
+
+  return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
+}
+
+/*
+ * Utility to print an array of headers as HTML string for debugging / logging purposes
+ *
+ * $param Array headers_array headers to be pretty printed. If NULL, then $_SERVER will be used
+ */
+function _headers_as_html_str($headers_array = NULL) {
+  if (!$headers_array) {
+    $headers_array = $_SERVER;
+  }
+  $headers = '';
+  foreach ($headers_array as $name => $value) {
+    $headers .= $name . '="' . $value . '"<br>';
+  }
+  return ($headers);
+}
+
+/**
+ * Utility to clear output buffer so XML output is clean
+ */
+function _ob_reset() {
+  if (ob_get_level()) {
+    ob_end_clean();
+  }
+  ob_start();
+}
+
+
+function print_r_tree($data)
+{
+  // capture the output of print_r
+  $out = print_r($data, true);
+
+  // replace something like '[element] => <newline> (' with <a href="javascript:toggleDisplay('...');">...</a><div id="..." style="display: none;">
+  $out = preg_replace('/([ \t]*)(\[[^\]]+\][ \t]*\=\>[ \t]*[a-z0-9 \t_]+)\n[ \t]*\(/iUe',"'\\1<a href=\"javascript:toggleDisplay(\''.(\$id = substr(md5(rand().'\\0'), 0, 7)).'\');\">\\2</a><div id=\"'.\$id.'\" style=\"display: none;\">'", $out);
+
+  // replace ')' on its own on a new line (surrounded by whitespace is ok) with '</div>
+  $out = preg_replace('/^\s*\)\s*$/m', '</div>', $out);
+
+  // print the javascript function toggleDisplay() and then the transformed output
+  echo '<script language="Javascript">function toggleDisplay(id) { document.getElementById(id).style.display = (document.getElementById(id).style.display == "block") ? "none" : "block"; }</script>'."\n$out";
+}
+
+
+function print_rc($expression, $return = null) {
+  if ($return) {
+    ob_start();
+  }
+  ?><pre><?php
+    print_r($expression);
+    ?></pre><script type="text/javascript">(function(e){function n(e){return e.replace(/(Array|Object)\n(\s*)\(/g,'<span class="debug-controls"><a class="toggle-display" href="#">$1</a> '+'<a class="toggle-children" href="#" title="toggle children">\\</a> '+'<a class="toggle-recursive" href="#" title="toggle recursive">*</a> '+'</span><span class="debug-data" style="display:none"> '+"\n$2(").replace(/\n(\s*?)\)\n/g,"\n$1)\n</span>")}function r(e,t){if("undefined"==typeof t){t=i(e,0)}e.style.display=t?"":"none";return t}function i(e,t){var n;if(!t){return e.style.display=="none"}else{for(var r=0;r<e.childNodes.length;++r){if("debug-data"==e.childNodes[r].className){n=i(e.childNodes[r],t-1);if(-1!=n){return n}}}}return-1}function s(e,t,n){if("undefined"==typeof n){n=i(e,t?2:1);if(-1==n){if(t){s(e,false);return}else{r(e);return}}}for(var o=0;o<e.childNodes.length;++o){if("debug-data"==e.childNodes[o].className){r(e.childNodes[o],n);if(t){s(e.childNodes[o],true,n)}}}if(n){r(e,n)}}function o(e){e.innerHTML=n(e.innerHTML);var t=e.getElementsByTagName("a");for(var i=0;i<t.length;++i){t[i].onclick=function(){var e=this.className,t=this.parentNode.nextSibling;if(e=="toggle-display"){r(t)}else if(e=="toggle-children"){s(t,false)}else if(e=="toggle-recursive"){s(t,true)}return false}}if("none"==e.style.display){e.style.display=""}}if("undefined"==typeof e){var t=document.getElementsByTagName("script");e=t[t.length-1].previousSibling}o(e)})()</script>
+  <?php
+  if ($return) {
+    return ob_get_clean();
+  }
+  return true;
+}
+
+
+/**
+ * Utility to var_dump() to string.
+ *
+ * @param Object $obj the object to print
+ * @param $dummy not used, exists to make quick change from print_r() to _var_dump2str()
+ */
+function _var_dump2str($obj, $notused = NULL) {
+  if( $obj ) {
+    ob_start();
+    // var_dump($obj);
+    print_rc( $obj );
+    return '<pre>' . ob_get_clean() . '</pre>';
+  }
+  return( '' );
+}
+
+/**
+ * Print XML string with appropriate headers and close out connection
+ *
+ * @param String $xmlstr The string to print
+ * @param String $contenttype Optional content type for header
+ **/
+function _print_xml_exit($xmlstr, $contenttype = 'text/xml') {
+  drupal_add_http_header('Connection', 'close', FALSE);
+  drupal_add_http_header('Content-Type', $contenttype, FALSE);
+  drupal_send_headers();
+  _ob_reset();
+
+  print '<?xml version="1.0" encoding="utf-8"?>';
+  print $xmlstr;
+  // watchdog( 'SOAP Out', /*_headers_as_html_str(headers_list()) . '<p>' . */ htmlspecialchars($xmlstr));
+
+  drupal_exit();
+}
