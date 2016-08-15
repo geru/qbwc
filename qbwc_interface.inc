@@ -1,6 +1,5 @@
 <?php
 // $Id:$
-
 /**
  * @file
  * QBWC Interface Definitions, errors and Drupal variables
@@ -8,7 +7,7 @@
 
 // namespace Drupal\qbwc_interface;
 // use Drupal\qbwc_interface;
-
+//
 // constants
 define('QBWC_INT_ERR_TICKET_MISMATCH', '33');
 define('QBWC_INT_TTL', 600); // seconds for apc_ calls timeout or lose data

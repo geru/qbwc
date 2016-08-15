@@ -1,6 +1,4 @@
 <?php
-// $Id:$
-
 /**
  * @file
  * QBWC Interface.
@@ -10,7 +8,7 @@
  * This is a very small and simple module. It performs the following functions:
  * <ul>
  * <li>use the PHP SoapServer class to perform base SOAP communications in accordance with the Webconnector's WSDL protocol and generates the WSDL file.</li>
- * <li>generate an appropriate QWC configuration file to be used by the Webconnector to connect wiht the Drupal site</li>
+ * <li>generate an appropriate QWC configuration file to be used by the Webconnector to connect with the Drupal site</li>
  * <li>generate random initial endpoint, username, and password combination and allows customization through user interface
  * <li>provide hooks for other modules to handle incoming and outgoing QBXML requests. See qbwc_interface.api.php for details</li>
  * </ul>
@@ -58,7 +56,7 @@ function qbwc_interface_menu() {
     // Page callback, etc. need to be added here.
     'description' => 'Accounting system configuration' , 'weight' => -8,
     'page callback' => 'system_admin_menu_block_page', // we should implement this function in system.admin.inc file
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'file' => 'system.admin.inc', // don't forget to add the file and path
     'file path' => drupal_get_path('module', 'system'),
     'position' => 'right',
@@ -69,7 +67,7 @@ function qbwc_interface_menu() {
     'description' => 'Set access parameters for Quickbooks Web Connector interface',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('qbwc_interface_admin_settings_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'file' => 'qbwc_interface.admin.inc',
     'file path' => drupal_get_path('module', 'qbwc_interface'),
   );
@@ -78,7 +76,7 @@ function qbwc_interface_menu() {
     'title' => 'QWC generator for Quickbooks Web Connector ',
     'description' => 'Generate a .QWC file for the Quickbooks Web Connector to access the endpoint',
     'page callback' => 'qbwc_interface_qwc_output',
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer site configuration'),
     'file' => 'qbwc_interface.admin.inc',
     'file path' => drupal_get_path('module', 'qbwc_interface'),
   );
@@ -106,22 +104,10 @@ function qbwc_interface_help($path, $arg) {
 
 
 /*
- * Create GUID's from: http://php.net/manual/en/function.com-create-guid.php
- */
-function GUID() {
-  if (function_exists('com_create_guid') === TRUE) {
-    return trim(com_create_guid(), '{}');
-  }
-
-  return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
-}
-
-/*
  * Utility to print an array of headers as HTML string for debugging / logging purposes
  *
  * $param Array headers_array headers to be pretty printed. If NULL, then $_SERVER will be used
- */
-function _headers_as_html_str($headers_array = NULL) {
+function qbwc_interface_headers_as_html_str($headers_array = NULL) {
   if (!$headers_array) {
     $headers_array = $_SERVER;
   }
@@ -131,11 +117,12 @@ function _headers_as_html_str($headers_array = NULL) {
   }
   return $headers;
 }
+*/
 
 /**
  * Utility to clear output buffer so XML output is clean
  */
-function _ob_reset() {
+function qbwc_interface_ob_reset() {
   if (ob_get_level()) {
     ob_end_clean();
   }
@@ -149,15 +136,14 @@ function _ob_reset() {
  * @param String $xmlstr The string to print
  * @param String $contenttype Optional content type for header
  **/
-function _print_xml_exit($xmlstr, $contenttype = 'text/xml') {
+function qbwc_interface_print_xml_exit($xmlstr, $contenttype = 'text/xml') {
   drupal_add_http_header('Connection', 'close', FALSE);
   drupal_add_http_header('Content-Type', $contenttype, FALSE);
   drupal_send_headers();
-  _ob_reset();
+  qbwc_interface_ob_reset();
 
   print '<?xml version="1.0" encoding="utf-8"?>';
   print $xmlstr;
-  // watchdog( 'SOAP Out', /*_headers_as_html_str(headers_list()) . '<p>' . */ htmlspecialchars($xmlstr));
-
+  
   drupal_exit();
 }

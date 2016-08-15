@@ -1,6 +1,4 @@
 <?php
-// $Id:$
-
 /*
  * @file
  * Implements PHP::soapserver class to interact with Quickbooks Web Connector
@@ -108,7 +106,7 @@ class qbwc_interface_webconnector {
     $ret = new \stdClass();
     $ticket = variable_get(QBWC_INT_TICKET);
     // could fetch company info and json_decode it if it turns out to be needed
-
+    //
     if (!($ticket && ($receiveResponseXML->ticket == $ticket))) {
       watchdog('QBWC', 'QBWC::receiveResponseXML[' . $ticket . ']( ' .
         $receiveResponseXML->ticket . ', ' .
@@ -200,7 +198,7 @@ function qbwc_interface_endpoint() {
     // ini_set("soap.wsdl_cache_enabled", "0"); // turn off cache when changing wsdl file
     $server = new \SoapServer($base_url . '/' . variable_get(QBWC_INT_ENDPT) . '.wsdl');
     $server->setClass('qbwc_interface_webconnector');
-    _ob_reset();
+    qbwc_interface_ob_reset();
     $server->handle();
     
   } catch (Exception $e) {

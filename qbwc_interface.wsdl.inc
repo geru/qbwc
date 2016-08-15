@@ -329,5 +329,5 @@ function qbwc_interface_wsdl_output() {
   </wsdl:service>
 </wsdl:definitions>';
 
-  _print_xml_exit($wsdl_content, 'application/wsdl+xml; charset=utf-8');
+  qbwc_interface_print_xml_exit($wsdl_content, 'application/wsdl+xml; charset=utf-8');
 }

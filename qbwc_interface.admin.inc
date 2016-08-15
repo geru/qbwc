@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /**
  * @file
  * Admin page callback for the qbwc_interface module.
@@ -37,7 +35,7 @@ function qbwc_interface_admin_settings_form() {
   $form[QBWC_INT_FILEID] = array(
     '#title' => t('QWC FileID for this QWC file'),
     '#type' => 'textfield',
-    '#default_value' => variable_get(QBWC_INT_FILEID, GUID()),
+    '#default_value' => variable_get(QBWC_INT_FILEID, com_create_guid()),
     '#description' => t('FileID for Quickbooks Web Connector see QBWC documentation.'),
     '#required' => TRUE,
   );
@@ -45,7 +43,7 @@ function qbwc_interface_admin_settings_form() {
   $form[QBWC_INT_OWNERID] = array(
     '#title' => t('QWC OwnerID for this QWC file'),
     '#type' => 'textfield',
-    '#default_value' => variable_get(QBWC_INT_OWNERID, GUID()),
+    '#default_value' => variable_get(QBWC_INT_OWNERID, com_create_guid()),
     '#description' => t('OwnerID for Quickbooks Web Connector see QBWC documentation.'),
     '#required' => TRUE,
   );
@@ -59,8 +57,6 @@ function qbwc_interface_admin_settings_form() {
  * */
 function qbwc_interface_admin_settings_form_submit($form_id, &$form_state) {
   // endpoint and associated .QWC and .WSDL generation utilities reside in menu, so needs regeneration
-  
-  // dpm( 'Base point 1' );
 }
 
 
@@ -78,7 +74,7 @@ function qbwc_interface_qwc_output() {
   $endpoint = variable_get(QBWC_INT_ENDPT);
   $service_endpoint = $base_url . '/' . $endpoint;
   $username = variable_get(QBWC_INT_USER);
-  // OwnerID should persist, but QB won't let another connection from the same ownerID, so we have to regenerate everytime.
+  // OwnerID should persist, but QB won't let another connection from the same ownerID, so we have to regenerate every time.
   // $ownerid = variable_get(QBWC_INT_OWNERID); // set for this entire Drupal installation, will persist (made non-persistent due to QB quirks)
   // if ($ownerid == NULL) {
   $ownerid = variable_get( QBWC_INT_OWNERID );
@@ -89,7 +85,6 @@ function qbwc_interface_qwc_output() {
   $readonly = variable_get(QBWC_INT_READONLY, 'false'); // can make this part of the form settings if needed
   $authflags = variable_get(QBWC_INT_AUTHFLAGS, '0xf'); // see QBWC docs, compatibility flags for QB styles
   $qbtype = variable_get(QBWC_INT_QBTYPE, 'QBFS'); // can make this part of the form settings if needed
-
   $qwc_content = <<< QBWCXML
 <QBWCXML>
   <AppName>$site_name qbwc_interface connection</AppName>
@@ -107,5 +102,5 @@ function qbwc_interface_qwc_output() {
 QBWCXML;
 
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $endpoint . '.qwc"', FALSE);
-  _print_xml_exit($qwc_content, 'application/xml; charset=utf-8');
+  qbwc_interface_print_xml_exit($qwc_content, 'application/xml; charset=utf-8');
 }

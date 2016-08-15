@@ -23,7 +23,7 @@
  * interface.
  *
  * QBWC Interface is a service hosted by a Drupal installation. It acts as a SOAP
- * server. The SOAP protocal and endpoint are defined by a .WSDL file which is used
+ * server. The SOAP protocol and endpoint are defined by a .WSDL file which is used
  * by SOAP client and SOAP server. QBWC_interface generates the WSDL file as the 
  * endpoint plus the extension ".wsdl" [The Quickbooks Web Connector does not 
  * actually use the generated file, but rather an internal copy.]
