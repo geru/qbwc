@@ -1,5 +1,4 @@
 <?php
-// $Id:$
 /**
  * @file
  * QBWC Interface Definitions, errors and Drupal variables

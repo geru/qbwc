@@ -114,7 +114,7 @@ class qbwc_interface_webconnector {
         $receiveResponseXML->strCompanyFileName . ', ' .
         $receiveResponseXML->qbXMLCountry . ', ' . $receiveResponseXML->qbXMLMajorVers . '.' . $receiveResponseXML->qbXMLMinorVers . ' )', NULL, 'error');
       $ret->receiveResponseXMLResult = -1; // per Intuit QBWC docs
-      $lastErr = 'RR:' . QBWC_INT_ERR_TICKET_MISMATCH . // ':' . $ticket . ':' . $receiveResponseXML->ticket;
+      $lastErr = 'RR:' . QBWC_INT_ERR_TICKET_MISMATCH; // ':' . $ticket . ':' . $receiveResponseXML->ticket;
       variable_set(QBWC_INT_LASTERR, $lastErr);
       return $ret;
     }
