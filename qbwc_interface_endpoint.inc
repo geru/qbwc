@@ -1,9 +1,8 @@
 <?php
 // $Id:$
 
-require_once 'qbwc_interface.inc';
-
 /*
+ * @file
  * Implements PHP::soapserver class to interact with Quickbooks Web Connector
  *
  * Two API hooks:
@@ -11,9 +10,9 @@ require_once 'qbwc_interface.inc';
  * qbwc_receiveResponseXML
  *
  */
+require_once 'qbwc_interface.inc';
 
-class qbwc_interface_webconnector
-{
+class qbwc_interface_webconnector {
 
   public function serverVersion() { //$serverVersion) {
     $ret = new \stdClass();
@@ -49,7 +48,7 @@ class qbwc_interface_webconnector
 
     // user_module_invoke('login', $edit, $user);
     $ticket = uniqid();
-    apc_store(QBWC_INT_TICKET, $ticket, QBWC_INT_TTL); // store session
+    variable_set(QBWC_INT_TICKET, $ticket); // store session
     $ret->authenticateResult[] = $ticket;
     $ret->authenticateResult[] = '';
 
@@ -59,15 +58,15 @@ class qbwc_interface_webconnector
   // passes response results to hook_sendRequestXML
   public function sendRequestXML($sendRequestXML) {
     $ret = new \stdClass();
-    $ticket = apc_fetch(QBWC_INT_TICKET);
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     if ($sendRequestXML->strHCPResponse) {
       $company = new SimpleXMLElement($sendRequestXML->strHCPResponse);
       $companyjson = json_encode($company);
-      apc_store(QBWC_INT_COMPANY, $companyjson, QBWC_INT_TTL);
+      variable_set(QBWC_INT_COMPANY, $companyjson);
     }
     else {
-      $companyjson = apc_fetch(QBWC_INT_COMPANY);
+      $companyjson = variable_get(QBWC_INT_COMPANY);
     }
     $company = json_decode($companyjson);
 
@@ -80,7 +79,7 @@ class qbwc_interface_webconnector
       $ret->sendRequestXMLResult = ''; // do nothing
       $lastErr = 'SR:' . QBWC_INT_ERR_TICKET_MISMATCH . // ':' . $ticket .
         ':' . $sendRequestXML->ticket;
-      apc_store(QBWC_INT_LASTERR, $lastErr, QBWC_INT_TTL);
+      variable_set(QBWC_INT_LASTERR, $lastErr);
       return $ret;
     }
 
@@ -107,7 +106,7 @@ class qbwc_interface_webconnector
   // passes response results to hook_receiveResponseXML
   public function receiveResponseXML($receiveResponseXML) {
     $ret = new \stdClass();
-    $ticket = apc_fetch(QBWC_INT_TICKET);
+    $ticket = variable_get(QBWC_INT_TICKET);
     // could fetch company info and json_decode it if it turns out to be needed
 
     if (!($ticket && ($receiveResponseXML->ticket == $ticket))) {
@@ -118,7 +117,7 @@ class qbwc_interface_webconnector
         $receiveResponseXML->qbXMLCountry . ', ' . $receiveResponseXML->qbXMLMajorVers . '.' . $receiveResponseXML->qbXMLMinorVers . ' )', NULL, 'error');
       $ret->receiveResponseXMLResult = -1; // per Intuit QBWC docs
       $lastErr = 'RR:' . QBWC_INT_ERR_TICKET_MISMATCH . // ':' . $ticket . ':' . $receiveResponseXML->ticket;
-      apc_store(QBWC_INT_LASTERR, $lastErr, QBWC_INT_TTL);
+      variable_set(QBWC_INT_LASTERR, $lastErr);
       return $ret;
     }
 
@@ -146,7 +145,7 @@ class qbwc_interface_webconnector
 
   public function connectionError($connectionError) {
     $ret = new \stdClass();
-    $ticket = apc_fetch(QBWC_INT_TICKET);
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     watchdog('QBWC', 'QBWC::connectionError[' .
       $ticket . ']( ' .
@@ -161,19 +160,19 @@ class qbwc_interface_webconnector
 
   public function getLastError($getLastError) { // parameter not used
     $ret = new \stdClass();
-    $ticket = apc_fetch(QBWC_INT_TICKET);
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     if (!($ticket && ($getLastError->ticket == $ticket))) {
       return $ret;
     }
-    $ret->getLastErrorResponse = apc_fetch(QBWC_INT_LASTERR);
+    $ret->getLastErrorResponse = variable_get(QBWC_INT_LASTERR);
     return $ret;
   }
 
 
   public function closeConnection($closeConnection) {
     $ret = new \stdClass();
-    $ticket = apc_fetch(QBWC_INT_TICKET);
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     if (!($ticket && ($closeConnection->ticket == $ticket))) {
       // original ticket got lost. this should get logged even if not debugging
@@ -183,8 +182,7 @@ class qbwc_interface_webconnector
       return $ret;
     }
     $ret->closeConnectionResult = 'QBWC::closeConnection( ' . $ticket . ' )';
-    $ticket = 0;
-    apc_store(QBWC_INT_TICKET, $ticket, QBWC_INT_TTL);
+    variable_set(QBWC_INT_TICKET, 0);
 
     return ($ret);
   }
@@ -199,8 +197,8 @@ function qbwc_interface_endpoint() {
   global $base_url;
 
   try {
-    ini_set("soap.wsdl_cache_enabled", "0"); // turn off cache when changing wsdl file
-    $server = new \SoapServer($base_url . '/' . variable_get(QBWC_INT_ENDPT, QBWC_INT_ENDPT) . '.wsdl');
+    // ini_set("soap.wsdl_cache_enabled", "0"); // turn off cache when changing wsdl file
+    $server = new \SoapServer($base_url . '/' . variable_get(QBWC_INT_ENDPT) . '.wsdl');
     $server->setClass('qbwc_interface_webconnector');
     _ob_reset();
     $server->handle();

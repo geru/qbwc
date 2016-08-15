@@ -43,10 +43,10 @@ function qbwc_interface_admin_settings_form() {
   );
 
   $form[QBWC_INT_OWNERID] = array(
-    '#title' => t('QWC FileID for this QWC file'),
+    '#title' => t('QWC OwnerID for this QWC file'),
     '#type' => 'textfield',
     '#default_value' => variable_get(QBWC_INT_OWNERID, GUID()),
-    '#description' => t('FileID for Quickbooks Web Connector see QBWC documentation.'),
+    '#description' => t('OwnerID for Quickbooks Web Connector see QBWC documentation.'),
     '#required' => TRUE,
   );
 
@@ -70,7 +70,7 @@ function qbwc_interface_admin_settings_form_submit($form_id, &$form_state) {
 function qbwc_interface_qwc_output() {
   global $base_url;
 
-  if( !( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off'  || stristr( $base_url, 'localhost') ) ) {
+  if ( !( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off'  || stristr( $base_url, 'localhost') ) ) {
     drupal_set_message( t('THIS WON\'T WORK!!! QBWC Interface REQUIRES secure HTTP (HTTPS) and you are running standard HTTP!!! You need to enable a secure server. Please reconfigure your server.'));
     return;
   }

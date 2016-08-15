@@ -5,12 +5,25 @@
  * @file
  * QBWC Interface.
  *
- * Direct interface to QB Webconnector via PHP soapserver at customizable endpoint
+ * Direct interface with Quickbooks Webconnector. Establish SOAP server at customizable endpoint and pass QBXML requests and responses via Drupal hooks. Generates QWC and WSDL files.
  *
- * Generates WSDL file at [endpoint URL].WSDL
- * Generates WebConnector .QWC with correct settings to connect to Drupal site
- * Generates random initial endpoint, username, and password combination and allows customization through user interface
- * Provides hooks for other modules to handle incoming and outgoing QBXML requests and responses. See qbwc_interface.api.php for details
+ * This is a very small and simple module. It performs the following functions:
+ * <ul>
+ * <li>use the PHP SoapServer class to perform base SOAP communications in accordance with the Webconnector's WSDL protocol and generates the WSDL file.</li>
+ * <li>generate an appropriate QWC configuration file to be used by the Webconnector to connect wiht the Drupal site</li>
+ * <li>generate random initial endpoint, username, and password combination and allows customization through user interface
+ * <li>provide hooks for other modules to handle incoming and outgoing QBXML requests. See qbwc_interface.api.php for details</li>
+ * </ul>
+ * 
+ * Rationale
+ * 
+ * Quickbooks stand-alone and point-of-sale desktop applications can share data with outside sources via the Quickbooks Webconnector. The Webconnector is a SOAP client requiring a SOAP server. It establishes a connection and then allows the SOAP server to act as an XML client to Quickbooks.
+ * 
+ * Because each side of this communications link acts as a client in one respect and a server in another respect, the whole question of whether Drupal acts as the server or the client in this exchange depends on the level at which the exchange is viewed. Server modules like Services are inappropriate as Drupal itself is not a server. And client modules are inappropriate because the can not act as a server accepting an incoming SOAP client request.
+ * 
+ * QBWC Interface resolves this by acting as a SOAP server to establish the connection to Quickbooks Webconnector and then steps back and acts as a conduit for Drupal, which then acts as a client passing requests and responses back and forth via Drupal hooks.
+ * 
+ * QBWC Interface does not make any assumptions about incoming or outgoing requests and responses and leaves that entirely to other modules. The other modules need only hook into its two offered hooks to begin receiving and sending requests in accordance with the QB XML specification.
  */
 
 
@@ -43,7 +56,7 @@ function qbwc_interface_menu() {
     'title' => 'Enterprise',
     'type' => MENU_NORMAL_ITEM,
     // Page callback, etc. need to be added here.
-    'description' => t('Accounting system configuration') , 'weight' => -8,
+    'description' => 'Accounting system configuration' , 'weight' => -8,
     'page callback' => 'system_admin_menu_block_page', // we should implement this function in system.admin.inc file
     'access arguments' => array('access administration pages'),
     'file' => 'system.admin.inc', // don't forget to add the file and path
@@ -116,7 +129,7 @@ function _headers_as_html_str($headers_array = NULL) {
   foreach ($headers_array as $name => $value) {
     $headers .= $name . '="' . $value . '"<br>';
   }
-  return ($headers);
+  return $headers;
 }
 
 /**
@@ -129,21 +142,6 @@ function _ob_reset() {
   ob_start();
 }
 
-/**
- * Utility to var_dump() to string.
- *
- * @param Object $obj the object to print
- * @param $dummy not used, exists to make quick change from print_r() to _var_dump2str()
- */
-function _var_dump2str($obj, $notused = NULL) {
-  if( $obj ) {
-    ob_start();
-    // var_dump($obj);
-    print_rc( $obj );
-    return '<pre>' . ob_get_clean() . '</pre>';
-  }
-  return( '' );
-}
 
 /**
  * Print XML string with appropriate headers and close out connection

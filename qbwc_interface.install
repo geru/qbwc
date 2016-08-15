@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: geru
- * Date: 7/24/2015
- * Time: 9:06 AM
+ * @file
+ * Install, update, and uninstall functions for the qbwc_interface module.
  */
 
 require_once 'qbwc_interface.inc';
@@ -60,12 +58,12 @@ function qbwc_interface_requirements() {
 
   global $base_url;
 
-  if( !( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off'  || stristr( $base_url, 'localhost') ) ) {
+  if ( !( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off'  || stristr( $base_url, 'localhost') ) ) {
     $requirements['qbwc_interface']['value'] = $t('Not Installed');
     $requirements['qbwc_interface']['severity'] = REQUIREMENT_ERROR;
     $requirements['qbwc_interface']['description'] = $t('Drupal site must be HTTPS or localhost. Please correct.');
   }
-  elseif ( (extension_loaded('apc') || extension_loaded('apcu')) && ini_get('apc.enabled') ) {
+  /* elseif ( (extension_loaded('apc') || extension_loaded('apcu')) && ini_get('apc.enabled') ) {
     $requirements['qbwc_interface']['value'] = $t('Installed');
     $requirements['qbwc_interface']['severity'] = REQUIREMENT_OK;
   }
@@ -73,7 +71,7 @@ function qbwc_interface_requirements() {
     $requirements['qbwc_interface']['value'] = $t('Not Installed');
     $requirements['qbwc_interface']['severity'] = REQUIREMENT_ERROR;
     $requirements['qbwc_interface']['description'] = $t('Please install the PHP APC module and change php.ini appropriately. In PHP5, the syntax to install might be "sudo pecl install apc" In PHP7, it might be "sudo pecl install apcu" followed by "sudo pecl install apcu_bc-beta" with appropriate additions "extension=apcu.so" followed by "extension=apc.so". Correct functionality can be tested with \'php -i | grep -i "APC Compatibility"\' which should return "APC Compatibility => 1.0.3"');
-  }
+  } */
   return $requirements;
 }
 
