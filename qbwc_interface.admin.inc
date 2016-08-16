@@ -35,7 +35,7 @@ function qbwc_interface_admin_settings_form() {
   $form[QBWC_INT_FILEID] = array(
     '#title' => t('QWC FileID for this QWC file'),
     '#type' => 'textfield',
-    '#default_value' => variable_get(QBWC_INT_FILEID, com_create_guid()),
+    '#default_value' => variable_get(QBWC_INT_FILEID, qbwc_interface_GUID()),
     '#description' => t('FileID for Quickbooks Web Connector see QBWC documentation.'),
     '#required' => TRUE,
   );
@@ -43,7 +43,7 @@ function qbwc_interface_admin_settings_form() {
   $form[QBWC_INT_OWNERID] = array(
     '#title' => t('QWC OwnerID for this QWC file'),
     '#type' => 'textfield',
-    '#default_value' => variable_get(QBWC_INT_OWNERID, com_create_guid()),
+    '#default_value' => variable_get(QBWC_INT_OWNERID, qbwc_interface_GUID()),
     '#description' => t('OwnerID for Quickbooks Web Connector see QBWC documentation.'),
     '#required' => TRUE,
   );
