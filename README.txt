@@ -123,7 +123,9 @@ Services
 The Webconnector data flow model uses two levels (SOAP and QBXML) and is 
 schizophrenic in that at the SOAP level the Drupal site acts as a server while 
 at the QBXML level it acts more as a client. The Drupal Services module is 
-intended for use-cases where Drupal acts as a data server.
+intended for use-cases where Drupal acts as a data server. Since in the 
+Webconnector communications model the Drupal site acts as a data client, use of 
+Services is inappropriate in this case.
 
 Efficiency
 
@@ -134,14 +136,16 @@ maximum efficiency with few dependencies.
 Modularized
 
 QBWC Interface minds its own business establishing and servicing SOAPserver 
-functionality and passing off QBXML to different level
+functionality and passing off QBXML to different level. Therefore, it can be 
+used by a broad spectrum of other applications which include CiviCRM, Redhen, 
+Drupal Commerce, and more.
 
 Data agnostic
 
-Quickbooks maintains lots of information such as customers, inventory, accounts, 
-and transactions that are not necessarily applicable to Drupal Commerce. Other 
-modules tie their functionality to a particular application or module or worse, 
-several applications, the usefulness is reduced.
+Quickbooks maintains lots of information such as customers, inventory, 
+accounts, and transactions that are not necessarily applicable to Drupal 
+Commerce. Other modules tie their functionality to a particular application or 
+module or to several applications thereby reducing their general usefulness.
 
 Similar Projects
 
@@ -157,7 +161,7 @@ Commerce QB Webconnect
 * doesn't provide a valid WSDL link in its WSDL file
 
 Commerce Quickbooks Webconnect seems to be an unmaintained sandbox version of 
-Commerc QB Webconnect
+Commerce QB Webconnect
 * relies on the quickbooks-php-devkit/QuickBooks.php which is a very large 
 morass of code
 
