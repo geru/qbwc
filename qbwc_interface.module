@@ -103,6 +103,12 @@ function qbwc_interface_help($path, $arg) {
 }
 
 
+function qbwc_interface_hook_info() {
+  $hooks[ QBWC_HOOK_RECEIVERESPONSE ] = array( 'group' => 'qbwc_interface' );
+  $hooks[ QBWC_HOOK_SENDREQUEST ] = array( 'group' => 'qbwc_interface' );
+}
+
+
 /*
  * Utility to print an array of headers as HTML string for debugging / logging purposes
  *

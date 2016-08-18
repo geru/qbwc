@@ -112,6 +112,79 @@ Quickbooks Webconnector. But, it should successfully perform the Webconnector
 authorization dialog without errors. Without the scaffolded modules, it will do 
 nothing more.
 
+Q: How does this compare with other Drupal Quickbooks integration modules?
+
+A: QBWC Interface is unique in that it doesn't use the Drupal Services module 
+and it is data agnostic, meaning it doesn't care what data gets exchanged or 
+what application makes use of the data.
+
+Services
+
+The Webconnector data flow model uses two levels (SOAP and QBXML) and is 
+schizophrenic in that at the SOAP level the Drupal site acts as a server while 
+at the QBXML level it acts more as a client. The Drupal Services module is 
+intended for use-cases where Drupal acts as a data server.
+
+Efficiency
+
+A PHP SOAPserver library is built into PHP. Services is not needed to use this 
+powerful functionality and QBWC Interface goes directly to the PHP library for 
+maximum efficiency with few dependencies.
+
+Modularized
+
+QBWC Interface minds its own business establishing and servicing SOAPserver 
+functionality and passing off QBXML to different level
+
+Data agnostic
+
+Quickbooks maintains lots of information such as customers, inventory, accounts, 
+and transactions that are not necessarily applicable to Drupal Commerce. Other 
+modules tie their functionality to a particular application or module or worse, 
+several applications, the usefulness is reduced.
+
+Similar Projects
+
+Commerce QB Webconnect
+* tied to Services
+* complicated
+* tied to Commerce
+* not easily extensible
+* not clear it does two-way data transfer
+* configuration of Webconnector remains a challenge
+* not necessarily clear that it performs necessary securing of data
+* not clear that it performs necessary tasks such as error reporting
+* doesn't provide a valid WSDL link in its WSDL file
+
+Commerce Quickbooks Webconnect seems to be an unmaintained sandbox version of 
+Commerc QB Webconnect
+* relies on the quickbooks-php-devkit/QuickBooks.php which is a very large 
+morass of code
+
+sandbox Quickbooks
+* has no commits
+
+QuickBooks PHP DevKit
+* large
+* unmaintained
+
+Quickbooks Integration
+* pre-alpha for Drupal 5
+
+Quickbooks API
+* last seen in Drupal 6
+
+Intuit QuickBooks Integration
+* sandbox for Quickbooks Online
+
+Ubercart Quickbooks Integration
+* Drupal 6 alpha
+
+Intuit QuickBooks Integration
+* closed as duplicate
+
+
+
 MAINTAINERS
 -----------
 

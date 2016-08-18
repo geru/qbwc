@@ -40,10 +40,6 @@ function qbwc_interface_install() {
   variable_set(QBWC_INT_PASSWORD, drupal_random_key(16));
   variable_set(QBWC_INT_FILEID, qbwc_interface_GUID());
   variable_set(QBWC_INT_OWNERID, qbwc_interface_GUID());
-
-  // announce hooks to world
-  module_invoke_all( QBWC_HOOK_RECEIVERESPONSE );
-  module_invoke_all( QBWC_HOOK_SENDREQUEST );
 }
 
 
