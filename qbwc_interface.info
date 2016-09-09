@@ -3,9 +3,6 @@ description = Quickbooks Web Connector service interface
 package = Enterprise
 core = 7.x
 files[] = qbwc_interface.inc
-files[] = qbwc_interface.endpoint.inc
-files[] = qbwc_interface.wsdl.inc
-files[] = qbwc_interface.admin.inc
 
 configure = admin/config/enterprise/qbwc
 

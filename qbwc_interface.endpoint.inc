@@ -1,5 +1,6 @@
 <?php
-/*
+
+/**
  * @file
  * Implements PHP::soapserver class to interact with Quickbooks Web Connector
  *
@@ -8,83 +9,81 @@
  * qbwc_receiveResponseXML
  *
  */
-require_once 'qbwc_interface.inc';
-
-class qbwc_interface_webconnector {
-
-  public function serverVersion() { //$serverVersion) {
-    $ret = new \stdClass();
-    $ret->serverVersionResult = '2.0';
-    return $ret;
+class qbwc_interface_webconnector
+{
+  public function serverVersion()
+  { $this->serverVersionResult = '2.0';
+    return $this;
   }
 
-  public function clientVersion($clientVersion) {
-    // watchdog('QBWC', 'clientVersion( ' . $clientVersion->strVersion . ' )');
-    $ret = new \stdClass();
-    $ret->clientVersionResult = '';
-    return $ret;
+  public function clientVersion($clientVersion)
+  { $this->clientVersionResult = '';
+    return $this;
   }
 
-
-  // user is set on setup form and must have correct role
-  public function authenticate($authenticate) {
-    $user = variable_get(QBWC_INT_USER);
+  public function authenticate($authenticate)
+  { $user = variable_get(QBWC_INT_USER);
     $pwd = variable_get(QBWC_INT_PASSWORD);
-    $ret = new \stdClass();
-
-
-    if (!($user && ($authenticate->strUserName == $user) &&
+    
+    if(!($user && ($authenticate->strUserName == $user) &&
       $pwd && ($authenticate->strPassword == $pwd))
     ) {
       // doesn't pass validation
       $message = 'WARNING: qbwc_interface authentication probed with invalid credentials';
-      watchdog( 'QBWC', $message, NULL, 'error' );
-      $ret->authenticateResult[] = '';    // per Intuit QBWC docs
-      $ret->authenticateResult[] = 'nvu'; // per Intuit QBWC docs
-      return $ret;
+      watchdog('QBWC', $message, NULL, 'error');
+      $this->authenticateResult[] = '';    // per Intuit QBWC docs
+      $this->authenticateResult[] = 'nvu'; // per Intuit QBWC docs
+      return $this;
     }
 
-    // user_module_invoke('login', $edit, $user);
     $ticket = uniqid();
     variable_set(QBWC_INT_TICKET, $ticket); // store session
-    $ret->authenticateResult[] = $ticket;
-    $ret->authenticateResult[] = '';
+    $this->authenticateResult[] = $ticket;
+    $this->authenticateResult[] = '';
 
-    return $ret;
+    return $this;
   }
 
-  // passes response results to hook_sendRequestXML
-  public function sendRequestXML($sendRequestXML) {
-    $ret = new \stdClass();
-    $ticket = variable_get(QBWC_INT_TICKET);
+  /**
+   * sendRequestXML() is called when the Quickbooks Webconnector is requesting a QBXML query.
+   * This is a key entryway to Drupal and is the point at which one of the two hooks provided by the
+   * qbwc_interface API gets triggered. This hook, identified by the QBWC_HOOK_SENDREQUEST constant is documented in
+   * the qbwc_interface API documentation.
+   * This function is the point at which the Drupal Soap server is asked to turn around and behave as a Quickbooks 
+   * XML client and send a QBXML request back to Quickbooks.
+   * 
+   * @param $sendRequestXML
+   * @return $this
+   */
+  public function sendRequestXML($sendRequestXML)
+  { $ticket = variable_get(QBWC_INT_TICKET);
 
-    if ($sendRequestXML->strHCPResponse) {
+    if($sendRequestXML->strHCPResponse) {
       $company = new SimpleXMLElement($sendRequestXML->strHCPResponse);
       $companyjson = json_encode($company);
       variable_set(QBWC_INT_COMPANY, $companyjson);
-    }
-    else {
+    } else {
       $companyjson = variable_get(QBWC_INT_COMPANY);
     }
     $company = json_decode($companyjson);
 
-    if (!($ticket && ($sendRequestXML->ticket == $ticket))) {
+    if(!($ticket && ($sendRequestXML->ticket == $ticket))) {
       watchdog('QBWC', 'QBWC::sendRequestXML[' .
         $ticket . ']( ' . $sendRequestXML->ticket . ': ' .
         _var_dump2str($company) . ', ' .
         $sendRequestXML->strCompanyFileName . ', ' .
         $sendRequestXML->qbXMLCountry . ', ' . $sendRequestXML->qbXMLMajorVers . '.' . $sendRequestXML->qbXMLMinorVers . ' )', NULL, 'error');
-      $ret->sendRequestXMLResult = ''; // do nothing
+      $this->sendRequestXMLResult = ''; // do nothing
       $lastErr = 'SR:' . QBWC_INT_ERR_TICKET_MISMATCH . // ':' . $ticket .
         ':' . $sendRequestXML->ticket;
       variable_set(QBWC_INT_LASTERR, $lastErr);
-      return $ret;
+      return $this;
     }
 
-    // passes XML request to hook qbwc_sendRequestXML()
-    if (sizeof(module_implements(QBWC_HOOK_SENDREQUEST)) > 0) {
+    // pass XML request to hook qbwc_sendRequestXML()
+    if(sizeof(module_implements(QBWC_HOOK_SENDREQUEST)) > 0) {
       // Call all modules that implement the hook, and let them make changes to $variables.
-      $ret->sendRequestXMLResult = implode('',
+      $this->sendRequestXMLResult = implode('',
         module_invoke_all(QBWC_HOOK_SENDREQUEST,
           $sendRequestXML->ticket,
           $company,
@@ -93,57 +92,60 @@ class qbwc_interface_webconnector {
           $sendRequestXML->qbXMLMajorVers,
           $sendRequestXML->qbXMLMinorVers)
       );
+    } else {
+      $this->sendRequestXMLResult = '';
     }
-    else {
-      $ret->sendRequestXMLResult = '';
-    }
-    return $ret;
+    return $this;
   }
 
-
-  // passes response results to hook_receiveResponseXML
-  public function receiveResponseXML($receiveResponseXML) {
-    $ret = new \stdClass();
-    $ticket = variable_get(QBWC_INT_TICKET);
+  /**
+   * receiveResponseXML() is the second of two access points between Drupal and the Quickbooks Webconnector. The hook
+   * identified by the constant QBWC_HOOK_RECEIVERESPONSE is triggered here and is documented within the
+   * qbwc_interface API documentation.
+   *
+   * Once again, this is the point at which the Drupal installation is asked to turn around and behave not as a SOAP
+   * server, but as a QBXML client receiving a QBXML response to a previous QBXML query.
+   * 
+   * @param $receiveResponseXML
+   * @return $this
+   */
+  public function receiveResponseXML($receiveResponseXML)
+  { $ticket = variable_get(QBWC_INT_TICKET);
+    
     // could fetch company info and json_decode it if it turns out to be needed
-    //
-    if (!($ticket && ($receiveResponseXML->ticket == $ticket))) {
+    if(!($ticket && ($receiveResponseXML->ticket == $ticket))) {
       watchdog('QBWC', 'QBWC::receiveResponseXML[' . $ticket . ']( ' .
         $receiveResponseXML->ticket . ', ' .
         $receiveResponseXML->strHCPResponse . ', ' .
         $receiveResponseXML->strCompanyFileName . ', ' .
         $receiveResponseXML->qbXMLCountry . ', ' . $receiveResponseXML->qbXMLMajorVers . '.' . $receiveResponseXML->qbXMLMinorVers . ' )', NULL, 'error');
-      $ret->receiveResponseXMLResult = -1; // per Intuit QBWC docs
+      $this->receiveResponseXMLResult = -1; // per Intuit QBWC docs
       $lastErr = 'RR:' . QBWC_INT_ERR_TICKET_MISMATCH; // ':' . $ticket . ':' . $receiveResponseXML->ticket;
       variable_set(QBWC_INT_LASTERR, $lastErr);
-      return $ret;
+      return $this;
     }
 
     // send to hook qbwc_receiveResponseXML()
-    if (sizeof(module_implements(QBWC_HOOK_RECEIVERESPONSE)) > 0) {
+    if(sizeof(module_implements(QBWC_HOOK_RECEIVERESPONSE)) > 0) {
       // Call all modules that implement the hook, and let them make changes to $variables.
-      $ret->receiveResponseXMLResult = implode('',
+      $this->receiveResponseXMLResult = implode('',
         module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
           $ticket,
           $receiveResponseXML->response,
           $receiveResponseXML->hresult,
           $receiveResponseXML->message));
-
-    }
-    else {
+    } else {
       watchdog('QBWC', 'QBWC:receiveResponseXML-nohook(' . $receiveResponseXML->response . ', ' .
         $receiveResponseXML->hresult . ', ' . $receiveResponseXML->message . ')', NULL, 'error');
-      $ret->receiveResponseXMLResult = 100;
+      $this->receiveResponseXMLResult = 100;
     }
 
-    $ret->receiveResponseXMLResult += 0;
-    return $ret;
+    $this->receiveResponseXMLResult += 0;
+    return $this;
   }
 
-
-  public function connectionError($connectionError) {
-    $ret = new \stdClass();
-    $ticket = variable_get(QBWC_INT_TICKET);
+  public function connectionError($connectionError)
+  { $ticket = variable_get(QBWC_INT_TICKET);
 
     watchdog('QBWC', 'QBWC::connectionError[' .
       $ticket . ']( ' .
@@ -151,47 +153,43 @@ class qbwc_interface_webconnector {
       $connectionError->hresult . ', ' .
       $connectionError->message . ')', NULL, 'error');
 
-    $ret->connectionErrorResult = 'done'; // per Intuit QBWC docs
-    return $ret;
+    $this->connectionErrorResult = 'done'; // per Intuit QBWC docs
+    return $this;
   }
 
+  public function getLastError($getLastError)
+  { $ticket = variable_get(QBWC_INT_TICKET);
 
-  public function getLastError($getLastError) { // parameter not used
-    $ret = new \stdClass();
-    $ticket = variable_get(QBWC_INT_TICKET);
-
-    if (!($ticket && ($getLastError->ticket == $ticket))) {
-      return $ret;
+    if(!($ticket && ($getLastError->ticket == $ticket))) {
+      return $this;
     }
-    $ret->getLastErrorResponse = variable_get(QBWC_INT_LASTERR);
-    return $ret;
+    $this->getLastErrorResponse = variable_get(QBWC_INT_LASTERR);
+    return $this;
   }
 
+  public function closeConnection($closeConnection)
+  { $ticket = variable_get(QBWC_INT_TICKET);
 
-  public function closeConnection($closeConnection) {
-    $ret = new \stdClass();
-    $ticket = variable_get(QBWC_INT_TICKET);
-
-    if (!($ticket && ($closeConnection->ticket == $ticket))) {
+    if(!($ticket && ($closeConnection->ticket == $ticket))) {
       // original ticket got lost. this should get logged even if not debugging
       $errmsg = 'QBWC::closeConnection( ' . $closeConnection->ticket . ' != ' . $ticket . ' )';
       watchdog('QBWC', $errmsg, NULL, 'error');
-      $ret->closeConnectionResult = 'CC: ' . $closeConnection->ticket;
-      return $ret;
+      $this->closeConnectionResult = 'CC: ' . $closeConnection->ticket;
+      return $this;
     }
-    $ret->closeConnectionResult = 'QBWC::closeConnection( ' . $ticket . ' )';
+    $this->closeConnectionResult = 'QBWC::closeConnection( ' . $ticket . ' )';
     variable_set(QBWC_INT_TICKET, 0);
 
-    return ($ret);
+    return ($this);
   }
 }
 
-
 /**
- * Implementation of the interface().
+ * Implementation of the interface endpoint.
  *
  */
-function qbwc_interface_endpoint() {
+function qbwc_interface_endpoint()
+{
   global $base_url;
 
   try {
@@ -200,10 +198,8 @@ function qbwc_interface_endpoint() {
     $server->setClass('qbwc_interface_webconnector');
     qbwc_interface_ob_reset();
     $server->handle();
-    
-  } catch (Exception $e) {
+  } catch(Exception $e) {
     watchdog('QBWC', 'NOSOAP ' . $e->getMessage(), NULL, 'error');
-    // dpm($e);
   }
   exit;
 }

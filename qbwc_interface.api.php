@@ -24,8 +24,8 @@
  *
  * QBWC Interface is a service hosted by a Drupal installation. It acts as a SOAP
  * server. The SOAP protocol and endpoint are defined by a .WSDL file which is used
- * by SOAP client and SOAP server. QBWC_interface generates the WSDL file as the 
- * endpoint plus the extension ".wsdl" [The Quickbooks Web Connector does not 
+ * by SOAP client and SOAP server. QBWC_interface generates the WSDL file as the
+ * endpoint plus the extension ".wsdl" [The Quickbooks Web Connector does not
  * actually use the generated file, but rather an internal copy.]
  *
  * The Quickbooks Web Connector uses an XML-formatted configuration file with the
@@ -36,7 +36,7 @@
  * QBWC Interface establishes the endpoint and then accepts a SOAP connection from
  * the Quickbooks Web Connector on that endpoint and authenticates the connection
  * using this username and password.
- * 
+ *
  * After this authentication phase, the Quickbooks Web Connector sends a message
  * indicating that it is ready to accept Quickbooks XML commands / queries and the
  * Drupal site then becomes the client with the Web Connector acting as intermediary
@@ -86,7 +86,6 @@
  *
  **/
 
-
 /*
  * Get a request (if any) to be sent to Quickbooks.
  *
@@ -135,10 +134,11 @@ QuickBooks POS via the request processor’s ProcessRequest method call.
  *   QuickBooks POS via the request processor’s ProcessRequest method call.
 
  * */
-function hook_qbwc_sendRequestXML( $ticket, SimpleXMLElement $company, $strCompanyFileName, $qbXMLCountry, $qbXMLMajorVers, $qbXMLMinorVers ) {
-  echo( 'sendRequestXML['. $ticket . ']\nCompanyInfo(' . $company . ')\nCompanyFile(' . $strCompanyFileName .
+function hook_qbwc_sendRequestXML($ticket, SimpleXMLElement $company, $strCompanyFileName, $qbXMLCountry, $qbXMLMajorVers, $qbXMLMinorVers)
+{
+  echo('sendRequestXML[' . $ticket . ']\nCompanyInfo(' . $company . ')\nCompanyFile(' . $strCompanyFileName .
     ')\nCountryCode(' . $qbXMLCountry . ')\nXMLVersion(' . $qbXMLMajorVers . '.' . $qbXMLMinorVers . ')\n');
-  return( '<?qbxml version="5.0" ?>
+  return ('<?qbxml version="5.0" ?>
 <QBXML>
 <QBXMLMsgsRq onError="stopOnError">
 <CustomerQueryRq requestID="5001" iterator="Start">
@@ -146,9 +146,8 @@ function hook_qbwc_sendRequestXML( $ticket, SimpleXMLElement $company, $strCompa
 <IncludeRetElement>ListID</IncludeRetElement>
 </CustomerQueryRq>
 </QBXMLMsgsRq>
-</QBXML>' ); // this example from the Quickbooks XML Programmers Guide in the SDK
+</QBXML>'); // this example from the Quickbooks XML Programmers Guide in the SDK
 }
-
 
 /*
  * Get a query response from Quickbooks.
@@ -195,8 +194,9 @@ function hook_qbwc_sendRequestXML( $ticket, SimpleXMLElement $company, $strCompa
  *   the Web Connector responds to this with a getLastError call. The negative value
  *   could be used as a custom error code.
  **/
-function hook_qbwc_receiveResponseXML( $ticket, $response, $hresult, $message ) {
-  echo( 'receiveResponse[' . $ticket . ']\nresponse(' . $response . ')\nhresult(' . $hresult .
+function hook_qbwc_receiveResponseXML($ticket, $response, $hresult, $message)
+{
+  echo('receiveResponse[' . $ticket . ']\nresponse(' . $response . ')\nhresult(' . $hresult .
     ')\nmessage(' . $message . ')\n');
-  return( '100' ); // 100% done
+  return ('100'); // 100% done
 }
