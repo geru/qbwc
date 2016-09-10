@@ -134,8 +134,7 @@ QuickBooks POS via the request processor’s ProcessRequest method call.
  *   QuickBooks POS via the request processor’s ProcessRequest method call.
 
  * */
-function hook_qbwc_sendRequestXML($ticket, SimpleXMLElement $company, $strCompanyFileName, $qbXMLCountry, $qbXMLMajorVers, $qbXMLMinorVers)
-{
+function hook_qbwc_sendRequestXML($ticket, SimpleXMLElement $company, $strCompanyFileName, $qbXMLCountry, $qbXMLMajorVers, $qbXMLMinorVers) {
   echo('sendRequestXML[' . $ticket . ']\nCompanyInfo(' . $company . ')\nCompanyFile(' . $strCompanyFileName .
     ')\nCountryCode(' . $qbXMLCountry . ')\nXMLVersion(' . $qbXMLMajorVers . '.' . $qbXMLMinorVers . ')\n');
   return ('<?qbxml version="5.0" ?>
@@ -194,8 +193,7 @@ function hook_qbwc_sendRequestXML($ticket, SimpleXMLElement $company, $strCompan
  *   the Web Connector responds to this with a getLastError call. The negative value
  *   could be used as a custom error code.
  **/
-function hook_qbwc_receiveResponseXML($ticket, $response, $hresult, $message)
-{
+function hook_qbwc_receiveResponseXML($ticket, $response, $hresult, $message) {
   echo('receiveResponse[' . $ticket . ']\nresponse(' . $response . ')\nhresult(' . $hresult .
     ')\nmessage(' . $message . ')\n');
   return ('100'); // 100% done

@@ -11,20 +11,20 @@
  */
 class qbwc_interface_webconnector
 {
-  public function serverVersion()
-  { $this->serverVersionResult = '2.0';
+  public function serverVersion() {
+    $this->serverVersionResult = '2.0';
     return $this;
   }
 
-  public function clientVersion($clientVersion)
-  { $this->clientVersionResult = '';
+  public function clientVersion($clientVersion) {
+    $this->clientVersionResult = '';
     return $this;
   }
 
-  public function authenticate($authenticate)
-  { $user = variable_get(QBWC_INT_USER);
+  public function authenticate($authenticate) {
+    $user = variable_get(QBWC_INT_USER);
     $pwd = variable_get(QBWC_INT_PASSWORD);
-    
+
     if(!($user && ($authenticate->strUserName == $user) &&
       $pwd && ($authenticate->strPassword == $pwd))
     ) {
@@ -49,14 +49,14 @@ class qbwc_interface_webconnector
    * This is a key entryway to Drupal and is the point at which one of the two hooks provided by the
    * qbwc_interface API gets triggered. This hook, identified by the QBWC_HOOK_SENDREQUEST constant is documented in
    * the qbwc_interface API documentation.
-   * This function is the point at which the Drupal Soap server is asked to turn around and behave as a Quickbooks 
+   * This function is the point at which the Drupal Soap server is asked to turn around and behave as a Quickbooks
    * XML client and send a QBXML request back to Quickbooks.
-   * 
+   *
    * @param $sendRequestXML
    * @return $this
    */
-  public function sendRequestXML($sendRequestXML)
-  { $ticket = variable_get(QBWC_INT_TICKET);
+  public function sendRequestXML($sendRequestXML) {
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     if($sendRequestXML->strHCPResponse) {
       $company = new SimpleXMLElement($sendRequestXML->strHCPResponse);
@@ -105,13 +105,13 @@ class qbwc_interface_webconnector
    *
    * Once again, this is the point at which the Drupal installation is asked to turn around and behave not as a SOAP
    * server, but as a QBXML client receiving a QBXML response to a previous QBXML query.
-   * 
+   *
    * @param $receiveResponseXML
    * @return $this
    */
-  public function receiveResponseXML($receiveResponseXML)
-  { $ticket = variable_get(QBWC_INT_TICKET);
-    
+  public function receiveResponseXML($receiveResponseXML) {
+    $ticket = variable_get(QBWC_INT_TICKET);
+
     // could fetch company info and json_decode it if it turns out to be needed
     if(!($ticket && ($receiveResponseXML->ticket == $ticket))) {
       watchdog('QBWC', 'QBWC::receiveResponseXML[' . $ticket . ']( ' .
@@ -144,8 +144,8 @@ class qbwc_interface_webconnector
     return $this;
   }
 
-  public function connectionError($connectionError)
-  { $ticket = variable_get(QBWC_INT_TICKET);
+  public function connectionError($connectionError) {
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     watchdog('QBWC', 'QBWC::connectionError[' .
       $ticket . ']( ' .
@@ -157,8 +157,8 @@ class qbwc_interface_webconnector
     return $this;
   }
 
-  public function getLastError($getLastError)
-  { $ticket = variable_get(QBWC_INT_TICKET);
+  public function getLastError($getLastError) {
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     if(!($ticket && ($getLastError->ticket == $ticket))) {
       return $this;
@@ -167,8 +167,8 @@ class qbwc_interface_webconnector
     return $this;
   }
 
-  public function closeConnection($closeConnection)
-  { $ticket = variable_get(QBWC_INT_TICKET);
+  public function closeConnection($closeConnection) {
+    $ticket = variable_get(QBWC_INT_TICKET);
 
     if(!($ticket && ($closeConnection->ticket == $ticket))) {
       // original ticket got lost. this should get logged even if not debugging
@@ -188,8 +188,7 @@ class qbwc_interface_webconnector
  * Implementation of the interface endpoint.
  *
  */
-function qbwc_interface_endpoint()
-{
+function qbwc_interface_endpoint() {
   global $base_url;
 
   try {

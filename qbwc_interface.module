@@ -29,8 +29,7 @@ require_once 'qbwc_interface.inc';
 /**
  * Implements hook_menu().
  */
-function qbwc_interface_menu()
-{
+function qbwc_interface_menu() {
   $endpoint = variable_get(QBWC_INT_ENDPT);
 
   $items[$endpoint] = array(
@@ -84,8 +83,7 @@ function qbwc_interface_menu()
 /**
  * Implements hook_help().
  */
-function qbwc_interface_help($path, $arg)
-{
+function qbwc_interface_help($path, $arg) {
   switch($path) {
     case 'admin/config/enterprise/qbwc':
       $output = t('Specify the endpoint, username and password used by the Quickbooks Web Connector in its .QWC file.
@@ -107,18 +105,16 @@ function qbwc_interface_help($path, $arg)
 /**
  * Implements hook_hook_info()
  */
-function qbwc_interface_hook_info()
-{
+function qbwc_interface_hook_info() {
   $hooks[QBWC_HOOK_RECEIVERESPONSE] = array('group' => 'qbwc_interface');
   $hooks[QBWC_HOOK_SENDREQUEST] = array('group' => 'qbwc_interface');
-  return( $hooks);
+  return ($hooks);
 }
 
 /**
  * Utility to clear output buffer so XML output is clean
  */
-function qbwc_interface_ob_reset()
-{
+function qbwc_interface_ob_reset() {
   if(ob_get_level()) {
     ob_end_clean();
   }
@@ -131,8 +127,7 @@ function qbwc_interface_ob_reset()
  * @param String $xmlstr The string to print
  * @param String $contenttype Optional content type for header
  **/
-function qbwc_interface_print_xml_exit($xmlstr, $contenttype = 'text/xml')
-{
+function qbwc_interface_print_xml_exit($xmlstr, $contenttype = 'text/xml') {
   drupal_add_http_header('Connection', 'close', FALSE);
   drupal_add_http_header('Content-Type', $contenttype, FALSE);
   drupal_send_headers();
@@ -148,8 +143,7 @@ function qbwc_interface_print_xml_exit($xmlstr, $contenttype = 'text/xml')
  * Utility to create GUID since com_create_guid can not be relied on to exist
  * source: Dave Pearson's snippet at http://php.net/manual/en/function.com-create-guid.php
  */
-function qbwc_interface_GUID($trim = true)
-{
+function qbwc_interface_GUID($trim = true) {
   // Windows
   if(function_exists('com_create_guid') === true) {
     if($trim === true)

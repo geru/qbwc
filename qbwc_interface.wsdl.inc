@@ -9,13 +9,12 @@
  *
  *   WSDL file is defined in this file
  */
-function qbwc_interface_wsdl_output()
-{
+function qbwc_interface_wsdl_output() {
   global $base_url;
 
   $service_endpoint = $base_url . '/' . variable_get(QBWC_INT_ENDPT, QBWC_INT_ENDPT);
 
-  $wsdl_content = 
+  $wsdl_content =
     '<wsdl:definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns="http://developer.intuit.com/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" targetNamespace="http://developer.intuit.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
     <s:schema elementFormDefault="qualified" targetNamespace="http://developer.intuit.com/">

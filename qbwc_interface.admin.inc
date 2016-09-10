@@ -7,8 +7,7 @@
 /**
  * Builds and returns the admin settings form.
  */
-function qbwc_interface_admin_settings_form()
-{
+function qbwc_interface_admin_settings_form() {
   $form[QBWC_INT_USER] = array(
     '#title' => t('.QWC username'),
     '#type' => 'textfield',
@@ -54,7 +53,7 @@ function qbwc_interface_admin_settings_form()
 
 /**
  * Submit function for input_simple_form().
- * */
+ */
 function qbwc_interface_admin_settings_form_submit($form_id, &$form_state) {
   // endpoint and associated .QWC and .WSDL generation utilities reside in menu, so needs regeneration
   menu_rebuild();
@@ -63,8 +62,7 @@ function qbwc_interface_admin_settings_form_submit($form_id, &$form_state) {
 /**
  * Deliver QWC file used to configure the Web Connector
  */
-function qbwc_interface_qwc_output()
-{
+function qbwc_interface_qwc_output() {
   global $base_url;
 
   if(!(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' || stristr($base_url, 'localhost'))) {
