@@ -85,7 +85,7 @@ function qbwc_interface_qwc_output() {
   <AppID></AppID>
   <AppURL>$service_endpoint</AppURL>
   <AppDescription>$site_name interface to QB Web Connector.</AppDescription>
-  <AppSupport>$service_endpoint</AppSupport>
+  <AppSupport>$site_name</AppSupport>
   <UserName>$username</UserName>
   <OwnerID>{{$ownerid}}</OwnerID>
   <FileID>{{$fileid}}</FileID>

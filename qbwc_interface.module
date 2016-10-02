@@ -46,19 +46,25 @@ function qbwc_interface_menu() {
     'access arguments' => array('access content'),
     'file' => 'qbwc_interface.wsdl.inc',
   );
-  // Make "Foo settings" appear on the admin Config page
   $items['admin/config/enterprise'] = array(
     'title' => 'Enterprise',
-    'type' => MENU_NORMAL_ITEM,
-    // Page callback, etc. need to be added here.
-    'description' => 'Accounting system configuration', 'weight' => -8,
-    'page callback' => 'system_admin_menu_block_page', // we should implement this function in system.admin.inc file
-    'access arguments' => array('administer site configuration'),
-    'file' => 'system.admin.inc', // don't forget to add the file and path
+    'description' => 'Enterprise configuration', 'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
     'position' => 'right',
-    'parent' => 'admin/config'
   );
-  $items['admin/config/enterprise/qbwc'] = array(
+  $items['admin/config/qb'] = array(
+    'title' => 'Quickbooks',
+    'description' => 'Quickbooks interface and importing', 'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+    'position' => 'right',
+  );
+  $items['admin/config/enterprise//qb/qbwc'] = array(
     'title' => 'Quickbooks WebConnector',
     'type' => MENU_NORMAL_ITEM,
     'description' => 'Set access parameters for Quickbooks Web Connector interface',
@@ -68,7 +74,7 @@ function qbwc_interface_menu() {
     'file' => 'qbwc_interface.admin.inc',
     'parent' => 'admin/config/enterprise'
   );
-  $items['admin/config/enterprise/qbwc/qwc_generator'] = array(
+  $items['admin/config/enterprise/qb/qbwc/qwc_generator'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'QWC generator for Quickbooks Web Connector ',
     'description' => 'Generate a .QWC file for the Quickbooks Web Connector to access the endpoint',
