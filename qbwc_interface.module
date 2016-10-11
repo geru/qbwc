@@ -26,61 +26,82 @@
 
 require_once 'qbwc_interface.inc';
 
+function _qbwc_interface_endpoint_list() {
+  // $endpoints = db_
+  $result = db_query( "SELECT * FROM {qbwc}" );
+  return $result->fetchAll();
+}
+
 /**
  * Implements hook_menu().
  */
 function qbwc_interface_menu() {
-  $endpoint = variable_get(QBWC_INT_ENDPT);
 
-  $items[$endpoint] = array(
-    'type' => MENU_CALLBACK,
-    'title' => 'Access endpoint for Quickbooks Web Connector ',
-    'page callback' => 'qbwc_interface_endpoint',
-    'file' => 'qbwc_interface.endpoint.inc',
-    'access arguments' => array('access content'),
-  );
-  $items[$endpoint . '.wsdl'] = array(
-    'type' => MENU_CALLBACK,
-    'title' => 'WSDL generator for Quickbooks Web Connector ',
-    'page callback' => 'qbwc_interface_wsdl_output',
-    'access arguments' => array('access content'),
-    'file' => 'qbwc_interface.wsdl.inc',
-  );
-  $items['admin/config/enterprise'] = array(
+  foreach( _qbwc_interface_endpoint_list() as $endpoint ) {
+    $items[$endpoint->endpoint] = array(
+      'type' => MENU_CALLBACK,
+      'title' => 'Access endpoint for Quickbooks Web Connector ',
+      'page callback' => 'qbwc_interface_endpoint',
+      'file' => 'qbwc_interface.endpoint.inc',
+      'access arguments' => array('access content'),
+    );
+    $items[QBWC_WSDL] = array(
+      'type' => MENU_CALLBACK,
+      'title' => 'WSDL generator for Quickbooks Web Connector ',
+      'page callback' => 'qbwc_interface_wsdl_output',
+      'access arguments' => array('access content'),
+      'file' => 'qbwc_interface.wsdl.inc',
+    );
+   
+  }
+  // build menu base structure if it doesn't exist
+/*  $items[$MENU_ENTERPRISE] = array(
     'title' => 'Enterprise',
-    'description' => 'Enterprise configuration', 'weight' => -8,
+    'description' => 'Enterprise configuration',
+    'weight' => -8,
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('access administration pages'),
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
-    'position' => 'right',
   );
-  $items['admin/config/qb'] = array(
+  $items[$MENU_ENTERPRISE . '/qb'] = array(
     'title' => 'Quickbooks',
-    'description' => 'Quickbooks interface and importing', 'weight' => -8,
+    'description' => 'Quickbooks interface and importing',
+    'weight' => -8,
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('access administration pages'),
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
-    'position' => 'right',
   );
-  $items['admin/config/enterprise//qb/qbwc'] = array(
+*/
+  $items[QBWC_INTERFACE_MENUROUTE] = array(
     'title' => 'Quickbooks WebConnector',
     'type' => MENU_NORMAL_ITEM,
     'description' => 'Set access parameters for Quickbooks Web Connector interface',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('qbwc_interface_admin_settings_form'),
+    'page arguments' => array('qbwc_interface_admin_overview'),
     'access arguments' => array('administer site configuration'),
     'file' => 'qbwc_interface.admin.inc',
-    'parent' => 'admin/config/enterprise'
+    // 'parent' => 'admin/config/enterprise'
   );
-  $items['admin/config/enterprise/qb/qbwc/qwc_generator'] = array(
-    'type' => MENU_LOCAL_TASK,
-    'title' => 'QWC generator for Quickbooks Web Connector ',
-    'description' => 'Generate a .QWC file for the Quickbooks Web Connector to access the endpoint',
-    'page callback' => 'qbwc_interface_qwc_output',
+  $items[QBWC_INTERFACE_MENUROUTE . '/add'] = array(
+    'title' => 'Add Webconnector',
+    'description' => 'Configure a new Webconnector endpoint',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('qbwc_interface_endpoint_edit_form', NULL, 'add'),
     'access arguments' => array('administer site configuration'),
     'file' => 'qbwc_interface.admin.inc',
+  );
+
+  // $basepath = QBWC_INTERFACE_MENUPARENT . /qbwc;
+  $items[QBWC_INTERFACE_MENUROUTE . '/%qbwc_interface_endpoint/%'] = array(
+    'title' => 'Webconnector endpoint configurator',
+    'description' => 'Configure Webconnector endpoint',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('qbwc_interface_endpoint_edit_form', 4, 5),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'qbwc_interface.admin.inc',
+    // 'redirect' =>
   );
 
   return $items;
@@ -91,7 +112,7 @@ function qbwc_interface_menu() {
  */
 function qbwc_interface_help($path, $arg) {
   switch($path) {
-    case 'admin/config/enterprise/qbwc':
+    case 'admin/enterprise/qbwc':
       $output = t('Specify the endpoint, username and password used by the Quickbooks Web Connector in its .QWC file.
       This user / password combination is not related to Drupal nor Quickbooks users or passwords.
       They are set here and in the QWC file independently of Drupal and Quickbooks users and passwords.');
@@ -182,3 +203,12 @@ function qbwc_interface_GUID($trim = true) {
   return $guidv4;
 }
 
+/**
+ * Menu loader
+ */
+function qbwc_interface_endpoint_load($id) {
+  return db_select('qbwc', 't')
+    ->fields('t')
+    ->condition('id', $id)
+    ->execute()->fetchObject();
+}

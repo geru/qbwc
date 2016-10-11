@@ -4,5 +4,5 @@ package = Enterprise
 core = 7.x
 files[] = qbwc_interface.inc
 
-configure = admin/config/enterprise/qbwc
+configure = admin/enterprise/qbwc
 
