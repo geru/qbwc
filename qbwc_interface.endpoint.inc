@@ -102,7 +102,7 @@ class qbwc_interface_webconnector {
     // pass XML request to hook qbwc_sendRequestXML()
     if (sizeof(module_implements(QBWC_HOOK_SENDREQUEST)) > 0) {
       // Call all modules that implement the hook, and let them make changes to $variables.
-      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML, $company));
+      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookname'], $sendRequestXML, $company));
       $this->sendRequestXMLResult = $ret ?
         '<?xml version="1.0"?><?qbxml version="13.0"?><QBXML>' . $ret . '</QBXML>' :
         $ret;
@@ -127,7 +127,7 @@ class qbwc_interface_webconnector {
   public function receiveResponseXML($receiveResponseXML) {
     $endpoint = $_GET['q'];
     $ticket = $receiveResponseXML->ticket;
-    if (!($connection = _qbwc_interface_get_connection_by_ticket(($endpoint, $ticket)))) {
+    if (!($connection = _qbwc_interface_get_connection_by_ticket($endpoint, $ticket))) {
       // $error = QBWC_INT_ERR_TICKET_MISMATCH;
       watchdog('QBWC', 'QBWC::receiveResponseXML bad ticket: ' .
         $receiveResponseXML->ticket . ', ' .
@@ -145,7 +145,7 @@ class qbwc_interface_webconnector {
       // Call all modules that implement the hook, and let them make changes to $variables.
       $this->receiveResponseXMLResult = implode('',
         module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
-          $connection['bookid'], $receiveResponseXML, $company));
+          $connection['bookname'], $receiveResponseXML, $company));
     }
     else {
       watchdog('QBWC', 'QBWC:receiveResponseXML-nohook(' . $receiveResponseXML->response . ', ' . $receiveResponseXML->hresult . ', ' . $receiveResponseXML->message . ')', NULL, 'error');

@@ -113,10 +113,10 @@ function qbwc_interface_endpoint_edit_form($form, &$form_state, $endpoint, $op) 
       '#type' => 'value',
       '#value' => isset($endpoint['id']) ? $endpoint['id'] : NULL
     ),
-    'bookid' => array(
-      '#title' => t('Book ID'),
+    'bookname' => array(
+      '#title' => t('Book machine name'),
       '#type' => 'textfield',
-      "#description" => t('Drupal data ID to be passed w. requests: eg. Book ID')
+      "#description" => t('Drupal data ID to be passed w. requests: eg. Book ')
     ),
     'endpoint' => array(
       '#title' => t('Endpoint'),

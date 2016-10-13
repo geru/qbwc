@@ -41,8 +41,8 @@ function qbwc_interface_schema() {
         'type' => 'serial',
         'not null' => TRUE,
       ),
-      'bookid' => array(
-        'description' => 'id of unique data this endpoint:username is associated with',
+      'bookname' => array(
+        'description' => 'machine name of unique data this endpoint:username is associated with',
         'type' => 'text',
         'length' => 64,
       ),
