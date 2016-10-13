@@ -1,11 +1,11 @@
 <?php
 /**
  * @file
- * Hooks provided by the qbwc_interface module.
+ * Hooks provided by the qbwc module.
  */
 
 /**
- * @defgroup qbwc_interface_api_hooks QBWC_interface API Hooks
+ * @defgroup qbwc_api_hooks QBWC_interface API Hooks
  * @{
  * Functions to send and receive Quickbooks XML requests and responses through
  * a SOAP connection to the Quickbooks Web Connector
@@ -24,13 +24,13 @@
  *
  * QBWC Interface is a service hosted by a Drupal installation. It acts as a SOAP
  * server. The SOAP protocol and endpoint are defined by a .WSDL file which is used
- * by SOAP client and SOAP server. QBWC_interface generates the WSDL file as the
+ * by SOAP client and SOAP server. qbwc generates the WSDL file as the
  * endpoint plus the extension ".wsdl" [The Quickbooks Web Connector does not
  * actually use the generated file, but rather an internal copy.]
  *
  * The Quickbooks Web Connector uses an XML-formatted configuration file with the
  * .QWC extension. There are many options and a particular syntax for this file.
- * QBWC_interface generates a .QWC with a basic set of default parameters that can
+ * qbwc generates a .QWC with a basic set of default parameters that can
  * be used as-is or modified as needed.
  *
  * QBWC Interface establishes the endpoint and then accepts a SOAP connection from

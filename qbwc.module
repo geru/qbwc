@@ -10,7 +10,7 @@
  * <li>use the PHP SoapServer class to perform base SOAP communications in accordance with the Webconnector's WSDL protocol and generates the WSDL file .</li>
  * <li>generate an appropriate QWC configuration file to be used by the Webconnector to connect with the Drupal site</li>
  * <li>generate random initial endpoint, username, and password combination and allows customization through user interface
- * <li>provide hooks for other modules to handle incoming and outgoing QBXML requests. See qbwc_interface.api.php for details</li>
+ * <li>provide hooks for other modules to handle incoming and outgoing QBXML requests. See qbwc.api.php for details</li>
  * </ul>
  *
  * Rationale
@@ -24,9 +24,9 @@
  * QBWC Interface does not make any assumptions about incoming or outgoing requests and responses and leaves that entirely to other modules. The other modules need only hook into its two offered hooks to begin receiving and sending requests in accordance with the QB XML specification.
  */
 
-require_once 'qbwc_interface.inc';
+require_once 'qbwc.inc';
 
-function _qbwc_interface_endpoint_list() {
+function _qbwc_endpoint_list() {
   // $endpoints = db_
   $result = db_query( "SELECT * FROM {qbwc}" );
   return $result->fetchAll();
@@ -35,22 +35,22 @@ function _qbwc_interface_endpoint_list() {
 /**
  * Implements hook_menu().
  */
-function qbwc_interface_menu() {
+function qbwc_menu() {
 
-  foreach( _qbwc_interface_endpoint_list() as $endpoint ) {
+  foreach( _qbwc_endpoint_list() as $endpoint ) {
     $items[$endpoint->endpoint] = array(
       'type' => MENU_CALLBACK,
       'title' => 'Access endpoint for Quickbooks Web Connector ',
-      'page callback' => 'qbwc_interface_endpoint',
-      'file' => 'qbwc_interface.endpoint.inc',
+      'page callback' => 'qbwc_endpoint',
+      'file' => 'qbwc.endpoint.inc',
       'access arguments' => array('access content'),
     );
     $items[QBWC_WSDL] = array(
       'type' => MENU_CALLBACK,
       'title' => 'WSDL generator for Quickbooks Web Connector ',
-      'page callback' => 'qbwc_interface_wsdl_output',
+      'page callback' => 'qbwc_wsdl_output',
       'access arguments' => array('access content'),
-      'file' => 'qbwc_interface.wsdl.inc',
+      'file' => 'qbwc.wsdl.inc',
     );
    
   }
@@ -74,33 +74,33 @@ function qbwc_interface_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
 */
-  $items[QBWC_INTERFACE_MENUROUTE] = array(
+  $items[QBWC_MENUROUTE] = array(
     'title' => 'Quickbooks WebConnector',
     'type' => MENU_NORMAL_ITEM,
     'description' => 'Set access parameters for Quickbooks Web Connector interface',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('qbwc_interface_admin_overview'),
+    'page arguments' => array('qbwc_admin_overview'),
     'access arguments' => array('administer site configuration'),
-    'file' => 'qbwc_interface.admin.inc',
+    'file' => 'qbwc.admin.inc',
     // 'parent' => 'admin/config/enterprise'
   );
-  $items[QBWC_INTERFACE_MENUROUTE . '/add'] = array(
+  $items[QBWC_MENUROUTE . '/add'] = array(
     'title' => 'Add Webconnector',
     'description' => 'Configure a new Webconnector endpoint',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('qbwc_interface_endpoint_edit_form', NULL, 'add'),
+    'page arguments' => array('qbwc_endpoint_edit_form', NULL, 'add'),
     'access arguments' => array('administer site configuration'),
-    'file' => 'qbwc_interface.admin.inc',
+    'file' => 'qbwc.admin.inc',
   );
 
-  // $basepath = QBWC_INTERFACE_MENUPARENT . /qbwc;
-  $items[QBWC_INTERFACE_MENUROUTE . '/%qbwc_interface_endpoint/%'] = array(
+  // $basepath = qbwc_MENUPARENT . /qbwc;
+  $items[QBWC_MENUROUTE . '/%qbwc_interface_endpoint/%'] = array(
     'title' => 'Webconnector endpoint configurator',
     'description' => 'Configure Webconnector endpoint',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('qbwc_interface_endpoint_edit_form', 4, 5),
+    'page arguments' => array('qbwc_endpoint_edit_form', 4, 5),
     'access arguments' => array('administer site configuration'),
-    'file' => 'qbwc_interface.admin.inc',
+    'file' => 'qbwc.admin.inc',
     // 'redirect' =>
   );
 
@@ -110,7 +110,7 @@ function qbwc_interface_menu() {
 /**
  * Implements hook_help().
  */
-function qbwc_interface_help($path, $arg) {
+function qbwc_help($path, $arg) {
   switch($path) {
     case 'admin/enterprise/qbwc':
       $output = t('Specify the endpoint, username and password used by the Quickbooks Web Connector in its .QWC file.
@@ -118,7 +118,7 @@ function qbwc_interface_help($path, $arg) {
       They are set here and in the QWC file independently of Drupal and Quickbooks users and passwords.');
       break;
 
-    case 'admin/help#qbwc_interface':
+    case 'admin/help#qbwc':
       $output = '<p>' . t('QBWC Interface is the intermediary between Drupal and the Quickbooks Web Connector.' .
           'The username and password set in this interface correspond to the username and password' .
           'set in the Web Connector\'s .QWC file. The interface generates .WSDL and corresponding .QWC files') . '</p>';
@@ -132,16 +132,16 @@ function qbwc_interface_help($path, $arg) {
 /**
  * Implements hook_hook_info()
  */
-function qbwc_interface_hook_info() {
-  $hooks[QBWC_HOOK_RECEIVERESPONSE] = array('group' => 'qbwc_interface');
-  $hooks[QBWC_HOOK_SENDREQUEST] = array('group' => 'qbwc_interface');
+function qbwc_hook_info() {
+  $hooks[QBWC_HOOK_RECEIVERESPONSE] = array('group' => 'qbwc');
+  $hooks[QBWC_HOOK_SENDREQUEST] = array('group' => 'qbwc');
   return ($hooks);
 }
 
 /**
  * Utility to clear output buffer so XML output is clean
  */
-function qbwc_interface_ob_reset() {
+function qbwc_ob_reset() {
   if(ob_get_level()) {
     ob_end_clean();
   }
@@ -154,11 +154,11 @@ function qbwc_interface_ob_reset() {
  * @param String $xmlstr The string to print
  * @param String $contenttype Optional content type for header
  **/
-function qbwc_interface_print_xml_exit($xmlstr, $contenttype = 'text/xml') {
+function qbwc_print_xml_exit($xmlstr, $contenttype = 'text/xml') {
   drupal_add_http_header('Connection', 'close', FALSE);
   drupal_add_http_header('Content-Type', $contenttype, FALSE);
   drupal_send_headers();
-  qbwc_interface_ob_reset();
+  qbwc_ob_reset();
 
   print '<?xml version="1.0" encoding="utf-8"?>';
   print $xmlstr;
@@ -170,7 +170,7 @@ function qbwc_interface_print_xml_exit($xmlstr, $contenttype = 'text/xml') {
  * Utility to create GUID since com_create_guid can not be relied on to exist
  * source: Dave Pearson's snippet at http://php.net/manual/en/function.com-create-guid.php
  */
-function qbwc_interface_GUID($trim = true) {
+function qbwc_GUID($trim = true) {
   // Windows
   if(function_exists('com_create_guid') === true) {
     if($trim === true)
@@ -206,7 +206,7 @@ function qbwc_interface_GUID($trim = true) {
 /**
  * Menu loader
  */
-function qbwc_interface_endpoint_load($id) {
+function qbwc_endpoint_load($id) {
   return db_select('qbwc', 't')
     ->fields('t')
     ->condition('id', $id)

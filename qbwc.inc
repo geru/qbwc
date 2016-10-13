@@ -4,11 +4,11 @@
  * QBWC Interface Definitions, errors and Drupal variables
  */
 
-// todo: namespace Drupal\qbwc_interface;
-// todo: use Drupal\qbwc_interface;
+// todo: namespace Drupal\qbwc;
+// todo: use Drupal\qbwc;
 //
 
-const QBWC_INTERFACE_MENUROUTE = 'admin/enterprise/qb/qbwc';
+const QBWC_MENUROUTE = 'admin/enterprise/qb/qbwc';
 const QBWC_WSDL = 'qbwc.wsdl';
 
 // constants

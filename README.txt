@@ -17,7 +17,8 @@ Quickbooks Standalone and Point-of-sale (POS) systems run on independent
 computers. They are generally not accessible to outside server requests and 
 this helps with security of the data.
 
-The Webconnector maintains that security by ensuring that the Quickbooks 
+The Quickbooks Webconnector allows these two applications to exchange data
+with a Drupal site, but maintains security by ensuring that the Quickbooks
 computer only speaks to a desired website and does so at its own discretion.
 
 Using the SOAP communications protocol, the Webconnector acts as a SOAP client 
@@ -27,9 +28,10 @@ channel with the server. After the channel is established, the Webconnector
 then passes control to Quickbooks, which then acts as a QBXML server while the 
 Drupal website switches roles from SOAP server to QBXML client.
 
-Because of this dual-personality communications paradigm, it is sometimes 
-difficult to tell which end is acting as a server and which end is acting as a 
-client.
+Because of this dual-personality communications paradigm where each end of the
+connection acts simultaneously as a client in one instance and a server in
+another instance, it is sometimes difficult to tell which end is acting as a
+server and which end is acting as a client.
 
 Configuring the Webconnector
 
@@ -50,11 +52,11 @@ Webconnector.
 
 The Webconnector is then run on the Quickbooks computer. The Webconnector 
 connects to the Drupal site via the SOAP-server endpoint (established by 
-qbwc_interface) and asks it if it has any requests for the Quickbooks computer. 
+qbwc) and asks it if it has any requests for the Quickbooks computer. 
 The Drupal site sends any pending requests at that moment and processes the 
 responses as they come in.
 
-The qbwc_interface module sets up a SOAP server to talk to the Webconnector. 
+The qbwc module sets up a SOAP server to talk to the Webconnector. 
 When the Webconnector connects, qbwc_handles Drupal's communication with the 
 Webconnector and provides hooks to the rest of Drupal to send and receive 
 messages to and from the Webconnector's host Quickbooks application.
@@ -109,14 +111,14 @@ Q: What does this module do?
 
 A: It does nothing without some configuration and outside connection from a 
 Quickbooks Webconnector. But, it should successfully perform the Webconnector 
-authorization dialog without errors. Without the scaffolded modules, it will do 
+authorization dialog without errors. Without any scaffolded modules, it will do
 nothing more.
 
 Q: How does this compare with other Drupal Quickbooks integration modules?
 
 A: QBWC Interface is unique in that it doesn't use the Drupal Services module 
 and it is data agnostic, meaning it doesn't care what data gets exchanged or 
-what application makes use of the data.
+which Drupal application makes use of the data.
 
 Services
 
@@ -125,13 +127,13 @@ schizophrenic in that at the SOAP level the Drupal site acts as a server while
 at the QBXML level it acts more as a client. The Drupal Services module is 
 intended for use-cases where Drupal acts as a data server. Since in the 
 Webconnector communications model the Drupal site acts as a data client, use of 
-Services is inappropriate in this case.
+Services is inappropriate in this use case.
 
 Efficiency
 
 A PHP SOAPserver library is built into PHP. Services is not needed to use this 
 powerful functionality and QBWC Interface goes directly to the PHP library for 
-maximum efficiency with few dependencies.
+maximum efficiency with few (if any) dependencies.
 
 Modularized
 

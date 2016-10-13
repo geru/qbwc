@@ -10,7 +10,7 @@
  *
  */
 
-function _qbwc_interface_get_connection_by_ticket($endpoint, $ticket = NULL) {
+function _qbwc_get_connection_by_ticket($endpoint, $ticket = NULL) {
   return ($ticket
     ? db_select('qbwc', 'c')
       ->condition('c.endpoint', $endpoint)
@@ -22,7 +22,7 @@ function _qbwc_interface_get_connection_by_ticket($endpoint, $ticket = NULL) {
   );
 }
 
-class qbwc_interface_webconnector {
+class qbwc_webconnector {
   public function serverVersion() {
     $this->serverVersionResult = '2.0';
     return $this;
@@ -50,7 +50,7 @@ class qbwc_interface_webconnector {
       $this->authenticateResult[] = 'nvu'; // per Intuit QBWC docs
     }
     else {
-      $ticket = qbwc_interface_GUID();
+      $ticket = qbwc_GUID();
       db_update('qbwc')
         ->fields(array('ticket' => $ticket))
         ->condition('endpoint', $endpoint)
@@ -66,8 +66,8 @@ class qbwc_interface_webconnector {
   /**
    * sendRequestXML() is called when the Quickbooks Webconnector is requesting a QBXML query.
    * This is a key entryway to Drupal and is the point at which one of the two hooks provided by the
-   * qbwc_interface API gets triggered. This hook, identified by the QBWC_HOOK_SENDREQUEST constant is documented in
-   * the qbwc_interface API documentation.
+   * qbwc API gets triggered. This hook, identified by the QBWC_HOOK_SENDREQUEST constant is documented in
+   * the qbwc API documentation.
    * This function is the point at which the Drupal Soap server is asked to turn around and behave as a Quickbooks
    * XML client and send a QBXML request back to Quickbooks.
    *
@@ -77,7 +77,7 @@ class qbwc_interface_webconnector {
   public function sendRequestXML($sendRequestXML) {
     $endpoint = $_GET['q'];
     $ticket = $sendRequestXML->ticket;
-    if (!($connection = _qbwc_interface_get_connection_by_ticket($endpoint, $ticket))) {
+    if (!($connection = _qbwc_get_connection_by_ticket($endpoint, $ticket))) {
       // $error = QBWC_INT_ERR_TICKET_MISMATCH;
       watchdog('QBWC', 'sendRequestXML(' . $endpoint . ')[' . $ticket . ']( ' . $sendRequestXML->ticket . ': ' .
         ', ' . $sendRequestXML->strCompanyFileName . ', ' .
@@ -116,7 +116,7 @@ class qbwc_interface_webconnector {
   /**
    * receiveResponseXML() is the second of two access points between Drupal and the Quickbooks Webconnector. The hook
    * identified by the constant QBWC_HOOK_RECEIVERESPONSE is triggered here and is documented within the
-   * qbwc_interface API documentation.
+   * qbwc API documentation.
    *
    * Once again, this is the point at which the Drupal installation is asked to turn around and behave not as a SOAP
    * server, but as a QBXML client receiving a QBXML response to a previous QBXML query.
@@ -127,7 +127,7 @@ class qbwc_interface_webconnector {
   public function receiveResponseXML($receiveResponseXML) {
     $endpoint = $_GET['q'];
     $ticket = $receiveResponseXML->ticket;
-    if (!($connection = _qbwc_interface_get_connection_by_ticket($endpoint, $ticket))) {
+    if (!($connection = _qbwc_get_connection_by_ticket($endpoint, $ticket))) {
       // $error = QBWC_INT_ERR_TICKET_MISMATCH;
       watchdog('QBWC', 'QBWC::receiveResponseXML bad ticket: ' .
         $receiveResponseXML->ticket . ', ' .
@@ -167,14 +167,14 @@ class qbwc_interface_webconnector {
   }
 
   public function getLastError($getLastError) {
-    if ($connection = _qbwc_interface_get_connection_by_ticket($_GET['q'], $getLastError->ticket)) {
+    if ($connection = _qbwc_get_connection_by_ticket($_GET['q'], $getLastError->ticket)) {
       $this->getLastErrorResponse = $connection['lasterr'];
     }
     return $this;
   }
 
   public function closeConnection($closeConnection) {
-    if ($connection = _qbwc_interface_get_connection_by_ticket($_GET['q'], $closeConnection->ticket)) {
+    if ($connection = _qbwc_get_connection_by_ticket($_GET['q'], $closeConnection->ticket)) {
       db_update('qbwc')->fields(array('ticket' => NULL))
         ->condition('endpoint', $connection['endpoint'])
         ->condition('ticket', $closeConnection->ticket)
@@ -193,14 +193,14 @@ class qbwc_interface_webconnector {
  * Implementation of the interface endpoint.
  *
  */
-function qbwc_interface_endpoint() {
+function qbwc_endpoint() {
   global $base_url;
 
   try {
     // ini_set("soap.wsdl_cache_enabled", "0"); // turn off cache when changing wsdl file
     $server = new \SoapServer($base_url . '/' . QBWC_WSDL);
-    $server->setClass('qbwc_interface_webconnector');
-    qbwc_interface_ob_reset();
+    $server->setClass('qbwc_webconnector');
+    qbwc_ob_reset();
     $server->handle();
   } catch(Exception $e) {
     watchdog('QBWC', 'NOSOAP ' . $e->getMessage(), NULL, 'error');

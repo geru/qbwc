@@ -1,30 +1,30 @@
 <?php
 /**
  * @file
- * Install, update, and uninstall functions for the qbwc_interface module.
+ * Install, update, and uninstall functions for the qbwc module.
  */
 
-require_once 'qbwc_interface.inc';
+require_once 'qbwc.inc';
 
 /**
  * Implements hook_requirements()
  */
-function qbwc_interface_requirements()
+function qbwc_requirements()
 {
   $requirements = array();
   // Ensure translations do not break at install time
   $t = get_t();
 
-  $requirements['qbwc_interface'] = array(
-    'title' => $t('qbwc_interface'),
+  $requirements['qbwc'] = array(
+    'title' => $t('qbwc'),
   );
 
   global $base_url;
 
   if(!(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' || stristr($base_url, 'localhost'))) {
-    $requirements['qbwc_interface']['value'] = $t('Not Installed');
-    $requirements['qbwc_interface']['severity'] = REQUIREMENT_ERROR;
-    $requirements['qbwc_interface']['description'] = $t('Drupal site must be HTTPS or localhost. Please correct.');
+    $requirements['qbwc']['value'] = $t('Not Installed');
+    $requirements['qbwc']['severity'] = REQUIREMENT_ERROR;
+    $requirements['qbwc']['description'] = $t('Drupal site must be HTTPS or localhost. Please correct.');
   }
   return $requirements;
 }
@@ -32,7 +32,7 @@ function qbwc_interface_requirements()
 /*
  * Implements hook_schema()
  */
-function qbwc_interface_schema() {
+function qbwc_schema() {
   $schema['qbwc'] = array(
     'description' => 'Quickbooks Webconnector endpoints and settings',
     'fields' => array(
@@ -185,20 +185,14 @@ function qbwc_interface_schema() {
 /**
  * Implements hook_enable()
  */
-function qbwc_interface_enable() {
+function qbwc_enable() {
   menu_rebuild();
 }
 
 /**
  * Implements hook_disable()
  */
-function qbwc_interface_disable() {
+function qbwc_disable() {
   menu_rebuild();
-}
-
-/**
- * Implements hook_uninstall().
- */
-function qbwc_interface_uninstall() {
 }
 

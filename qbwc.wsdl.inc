@@ -9,7 +9,7 @@
  *
  *   WSDL file is defined in this file
  */
-function qbwc_interface_wsdl_output() {
+function qbwc_wsdl_output() {
   global $base_url;
 
   $service_endpoint = $base_url . '/' . QBWC_WSDL;
@@ -323,5 +323,5 @@ function qbwc_interface_wsdl_output() {
   </wsdl:service>
 </wsdl:definitions>';
 
-  qbwc_interface_print_xml_exit($wsdl_content, 'application/wsdl+xml; charset=utf-8');
+  qbwc_print_xml_exit($wsdl_content, 'application/wsdl+xml; charset=utf-8');
 }
