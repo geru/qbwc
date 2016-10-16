@@ -44,8 +44,10 @@ class qbwc_webconnector {
       ->execute();
     if (!$query->rowCount()) {
       // doesn't pass validation
-      $message = 'WARNING: endpoint(' . $endpoint . ') authentication probed with invalid credentials (' . $authenticate->strUserName . ':' . $authenticate->strPassword . ')';
-      watchdog('QBWC', $message, NULL, 'error');
+      watchdog('QBWC', 'WARNING: endpoint(' . $endpoint . ') authentication probed with invalid credentials (' . 
+        $authenticate->strUserName . ':' . 
+        $authenticate->strPassword . ')',
+        NULL, 'error');
       $this->authenticateResult[] = '';    // per Intuit QBWC docs
       $this->authenticateResult[] = 'nvu'; // per Intuit QBWC docs
     }
@@ -64,12 +66,15 @@ class qbwc_webconnector {
   }
 
   /**
-   * sendRequestXML() is called when the Quickbooks Webconnector is requesting a QBXML query.
-   * This is a key entryway to Drupal and is the point at which one of the two hooks provided by the
-   * qbwc API gets triggered. This hook, identified by the QBWC_HOOK_SENDREQUEST constant is documented in
-   * the qbwc API documentation.
-   * This function is the point at which the Drupal Soap server is asked to turn around and behave as a Quickbooks
-   * XML client and send a QBXML request back to Quickbooks.
+   * sendRequestXML() is called when the Quickbooks Webconnector is requesting a
+   * QBXML query. This is a key entryway to Drupal and is the point at which one
+   * of the two hooks provided by the qbwc API gets triggered. This hook,
+   * identified by the QBWC_HOOK_SENDREQUEST constant is documented in the qbwc
+   * API documentation.
+   *
+   * This function is the point at which the Drupal Soap server is asked to turn
+   * around and behave as a Quickbooks XML client and send a QBXML request back
+   * to Quickbooks.
    *
    * @param $sendRequestXML
    * @return $this
@@ -79,11 +84,14 @@ class qbwc_webconnector {
     $ticket = $sendRequestXML->ticket;
     if (!($connection = _qbwc_get_connection_by_ticket($endpoint, $ticket))) {
       // $error = QBWC_INT_ERR_TICKET_MISMATCH;
-      watchdog('QBWC', 'sendRequestXML(' . $endpoint . ')[' . $ticket . ']( ' . $sendRequestXML->ticket . ': ' .
-        ', ' . $sendRequestXML->strCompanyFileName . ', ' .
-        $sendRequestXML->qbXMLCountry . ', ' . $sendRequestXML->qbXMLMajorVers . '.' . $sendRequestXML->qbXMLMinorVers . ' )', NULL, 'error');
+      watchdog('QBWC', 'sendRequestXML(' . $endpoint . ')[' . $ticket . ']( ' .
+        $sendRequestXML->ticket . ': ' .
+        $sendRequestXML->strCompanyFileName . ', ' .
+        $sendRequestXML->qbXMLCountry . ', ' .
+        $sendRequestXML->qbXMLMajorVers . '.' .
+        $sendRequestXML->qbXMLMinorVers . ' )',
+        NULL, 'error');
       $this->sendRequestXMLResult = ''; // do nothing
-      // @todo: ?? save error for last error query if possible, just not clear how to report
       return $this;
     }
     else {
@@ -114,12 +122,14 @@ class qbwc_webconnector {
   }
 
   /**
-   * receiveResponseXML() is the second of two access points between Drupal and the Quickbooks Webconnector. The hook
-   * identified by the constant QBWC_HOOK_RECEIVERESPONSE is triggered here and is documented within the
+   * receiveResponseXML() is the second of two access points between Drupal and
+   * the Quickbooks Webconnector. The hook identified by the constant
+   * QBWC_HOOK_RECEIVERESPONSE is triggered here and is documented within the
    * qbwc API documentation.
    *
-   * Once again, this is the point at which the Drupal installation is asked to turn around and behave not as a SOAP
-   * server, but as a QBXML client receiving a QBXML response to a previous QBXML query.
+   * Once again, this is the point at which the Drupal installation is asked to
+   * turn around and behave not as a SOAP server, but as a QBXML client
+   * receiving a QBXML response to a previous QBXML query.
    *
    * @param $receiveResponseXML
    * @return $this
@@ -133,7 +143,10 @@ class qbwc_webconnector {
         $receiveResponseXML->ticket . ', ' .
         $receiveResponseXML->strHCPResponse . ', ' .
         $receiveResponseXML->strCompanyFileName . ', ' .
-        $receiveResponseXML->qbXMLCountry . ', ' . $receiveResponseXML->qbXMLMajorVers . '.' . $receiveResponseXML->qbXMLMinorVers . ' )', NULL, 'error');
+        $receiveResponseXML->qbXMLCountry . ', ' .
+        $receiveResponseXML->qbXMLMajorVers . '.' .
+        $receiveResponseXML->qbXMLMinorVers . ' )',
+        NULL, 'error');
       $this->receiveResponseXMLResult = -1; // per Intuit QBWC docs
       return $this;
     }
@@ -142,13 +155,17 @@ class qbwc_webconnector {
 
     // send to hook qbwc_receiveResponseXML()
     if (sizeof(module_implements(QBWC_HOOK_RECEIVERESPONSE)) > 0) {
-      // Call all modules that implement the hook, and let them make changes to $variables.
+      // Call all modules that implement the hook
       $this->receiveResponseXMLResult = implode('',
         module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
           $connection['bookname'], $receiveResponseXML, $company));
     }
     else {
-      watchdog('QBWC', 'QBWC:receiveResponseXML-nohook(' . $receiveResponseXML->response . ', ' . $receiveResponseXML->hresult . ', ' . $receiveResponseXML->message . ')', NULL, 'error');
+      watchdog('QBWC', 'QBWC:receiveResponseXML-nohook(' .
+        $receiveResponseXML->response . ', ' .
+        $receiveResponseXML->hresult . ', ' .
+        $receiveResponseXML->message . ')',
+        NULL, 'error');
       $this->receiveResponseXMLResult = 100;
     }
 
@@ -198,7 +215,7 @@ function qbwc_endpoint() {
 
   try {
     // ini_set("soap.wsdl_cache_enabled", "0"); // turn off cache when changing wsdl file
-    $server = new \SoapServer($base_url . '/' . QBWC_WSDL);
+    $server = new \SoapServer($base_url . '/' . $_GET['q'] . QBWC_EXT_WSDL);
     $server->setClass('qbwc_webconnector');
     qbwc_ob_reset();
     $server->handle();

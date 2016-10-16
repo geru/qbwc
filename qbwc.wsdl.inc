@@ -12,7 +12,7 @@
 function qbwc_wsdl_output() {
   global $base_url;
 
-  $service_endpoint = $base_url . '/' . QBWC_WSDL;
+  $service_endpoint = $base_url . '/' . $_GET['q'];
 
   $wsdl_content =
     '<wsdl:definitions xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns="http://developer.intuit.com/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" targetNamespace="http://developer.intuit.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">

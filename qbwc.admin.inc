@@ -11,7 +11,7 @@ require_once "qbwc.inc";
  * QB Webconnector Interface connection admin pages
  */
 function qbwc_admin_overview() {
-  $base_path = QBWC_MENUROUTE;
+  $base_path = QBWC_MENUROUTE . '/qbwc';
   $destination = drupal_get_destination();
   $header = array(
     'endpoint' => t('Endpoint'),
@@ -96,7 +96,6 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
           : isset($_REQUEST['destination'])
             ? $_REQUEST['destination']
             : QBWC_MENUROUTE);
-        // drupal_goto( $form_state['redirect'] );
       }
       if ($op == 'import') {
         // @todo: prompt for file, upload to private, parse XML into connection, delete file, and reload page
@@ -116,7 +115,8 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
     'bookname' => array(
       '#title' => t('Book machine name'),
       '#type' => 'textfield',
-      "#description" => t('Drupal data ID to be passed w. requests: eg. Book ')
+      '#description' => t('Drupal data ID to be passed w. requests: eg. Book '),
+      '#default_value' => $connection['bookname'] ? $connection['bookname'] : 'example',
     ),
     'endpoint' => array(
       '#title' => t('Endpoint'),
@@ -187,10 +187,7 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
       '#type' => 'submit',
       '#value' => t('Delete')
     );
-    $form['buttons']['import'] = array(
-      '#type' => 'submit',
-      '#value' => t('Import QWC')
-    );
+    // @todo: import info from QWC file: $form['buttons']['import'] = array('#type' => 'submit','#value' => t('Import QWC'));
   }
 
   return $form;
@@ -271,7 +268,7 @@ function qbwc_qwc_output($connection) {
   <AuthFlags>$connection->qwc_authflags</AuthFlags>
 </QBWCXML>
 QBWCXML;
-
+  // todo: write all the optional properties if they are set
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $endpoint . '.qwc"', FALSE);
   qbwc_print_xml_exit($qwc_content, 'application/xml; charset=utf-8');
 }
