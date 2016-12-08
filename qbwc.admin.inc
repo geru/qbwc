@@ -14,6 +14,7 @@ function qbwc_admin_overview() {
   $base_path = QBWC_MENUROUTE . '/qbwc';
   $destination = drupal_get_destination();
   $header = array(
+    'bookid' => t('Book'),
     'endpoint' => t('Endpoint'),
     'qwc_username' => t('User'),
     'qwc_qbtype' => t('Type'),
@@ -26,6 +27,7 @@ function qbwc_admin_overview() {
   foreach (_qbwc_connection_list() as $connection) {
     $key = $connection->id;
     $options[$key] = array(
+      'bookid' => $connection->bookid,
       'endpoint' => check_plain($connection->endpoint),
       'qwc_username' => check_plain($connection->qwc_username),
       'qwc_qbtype' => check_plain($connection->qwc_qbtype),
@@ -75,6 +77,7 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
     if (!$connection) {
       $connection = array(
         'id' => NULL,
+        'bookid' => 0,
         'endpoint' => strtr(drupal_random_key(8), '-', '_'),
         'qwc_username' => strtr(drupal_random_key(8), '-', '_'),
         'password' => strtr(drupal_random_key(8), '-', '_'),
@@ -112,11 +115,12 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
       '#type' => 'value',
       '#value' => isset($connection['id']) ? $connection['id'] : NULL
     ),
-    'bookname' => array(
-      '#title' => t('Book machine name'),
+    'bookid' => array(
+      '#title' => t('Book machine id'),
       '#type' => 'textfield',
-      '#description' => t('Drupal data ID to be passed w. requests: eg. Book '),
-      '#default_value' => $connection['bookname'] ? $connection['bookname'] : 'example',
+      '#description' => t('Drupal book / dataset ID to be passed w. requests: eg. 1 '),
+      '#default_value' => $connection['bookid'] ? $connection['bookid'] : 0,
+      '#element_validate' => array('element_validate_integer_positive'),
     ),
     'endpoint' => array(
       '#title' => t('Endpoint'),

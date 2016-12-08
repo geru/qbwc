@@ -41,10 +41,9 @@ function qbwc_schema() {
         'type' => 'serial',
         'not null' => TRUE,
       ),
-      'bookname' => array(
-        'description' => 'machine name of unique data this endpoint:username is associated with',
-        'type' => 'text',
-        'length' => 64,
+      'bookid' => array(
+        'description' => 'machine id of unique data set this endpoint:username is associated with',
+        'type' => 'int'
       ),
       'endpoint' => array(
         'description' => '',
