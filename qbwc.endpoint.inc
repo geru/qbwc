@@ -112,7 +112,7 @@ class qbwc_webconnector {
       // Call all modules that implement the hook, and let them make changes to $variables.
       $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML, $company));
       $this->sendRequestXMLResult = $ret ?
-        '<?xml version="1.0"?><?qbxml version="13.0"?><QBXML>' . $ret . '</QBXML>' :
+        '<?xml version="1.0"?><?qbxml version="13.0"?>' . $ret :
         $ret;
     }
     else {
@@ -190,8 +190,16 @@ class qbwc_webconnector {
     return $this;
   }
 
+  // Implements QBWC closeConnection: see SDK documentation
   public function closeConnection($closeConnection) {
+    $this->closeConnectionResult = '';
+
     if ($connection = _qbwc_get_connection_by_ticket($_GET['q'], $closeConnection->ticket)) {
+      if (sizeof(module_implements(QBWC_HOOK_CLOSECONNECTION)) > 0) {
+        // Call all modules that implement the close connection hook
+        $this->closeConnectionResult = implode('',
+          module_invoke_all(QBWC_HOOK_CLOSECONNECTION, $connection['bookid'], $closeConnection));
+      }
       db_update('qbwc')->fields(array('ticket' => NULL))
         ->condition('endpoint', $connection['endpoint'])
         ->condition('ticket', $closeConnection->ticket)
@@ -201,7 +209,6 @@ class qbwc_webconnector {
       watchdog('QBWC', 'QBWC::closeConnection bad ticket ' . $closeConnection->ticket, NULL, 'error');
     }
 
-    $this->closeConnectionResult = '';
     return ($this);
   }
 }
