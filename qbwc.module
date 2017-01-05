@@ -64,17 +64,6 @@ function qbwc_menu() {
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
   );
-  /*
-  $items[$MENU_ENTERPRISE . '/qb'] = array(
-    'title' => 'Quickbooks',
-    'description' => 'Quickbooks interface and importing',
-    'weight' => -8,
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
-  );
-*/
   $items[QBWC_MENUROUTE . '/qbwc'] = array(
     'title' => 'Quickbooks WebConnector',
     'type' => MENU_NORMAL_ITEM,
@@ -93,7 +82,6 @@ function qbwc_menu() {
     'access arguments' => array('administer site configuration'),
     'file' => 'qbwc.admin.inc',
   );
-
   // $basepath = qbwc_MENUPARENT . /qbwc;
   $items[QBWC_MENUROUTE . '/qbwc/%qbwc_connection/%'] = array(
     'title' => 'Webconnector connection configurator',
