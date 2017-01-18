@@ -155,9 +155,16 @@ class qbwc_webconnector {
     // send to hook qbwc_receiveResponseXML()
     if (sizeof(module_implements(QBWC_HOOK_RECEIVERESPONSE)) > 0) {
       // Call all modules that implement the hook
-      $this->receiveResponseXMLResult = implode('',
-        module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
-          $connection['bookid'], $receiveResponseXML, $connectiondata));
+      $values = module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
+        $connection['bookid'], $receiveResponseXML, $connectiondata);
+      $ret = 0;
+      foreach( $values as $value ) {
+        if( is_int($value) ) {
+          $ret += $value;
+        }
+      }
+      $ret = ($ret > 100) ? 100 : ($ret < 0 ? 0 : $ret);
+      $this->receiveResponseXMLResult = $ret;
     }
     else {
       watchdog('QBWC', 'QBWC:receiveResponseXML-nohook(' .
