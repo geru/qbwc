@@ -20,6 +20,7 @@ function qbwc_admin_overview() {
     'qwc_qbtype' => t('Type'),
     'qwc_isreadonly' => t('Readonly'),
     'qwc_authflags' => t('Authflags'),
+    'qbxml_version' => t('QBXML version'),
     'operations' => t('Operations'),
   );
 
@@ -33,6 +34,7 @@ function qbwc_admin_overview() {
       'qwc_qbtype' => check_plain($connection->qwc_qbtype),
       'qwc_isreadonly' => t($connection->qwc_isreadonly),
       'qwc_authflags' => check_plain($connection->qwc_authflags),
+      'qbxml_version' => check_plain($connection->qbxml_version)
     );
     $operations['edit'] = array(
       'title' => t('Edit'),
@@ -85,7 +87,8 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
         'qwc_ownerid' => qbwc_GUID(),
         'qwc_authflags' => '0xf',
         'qwc_isreadonly' => 'false',
-        'qwc_qbtype' => 'QBFS'
+        'qwc_qbtype' => 'QBFS',
+        'qbxml_version' => '13.0',
       );
     }
     else {
@@ -179,6 +182,13 @@ function qbwc_connection_edit_form($form, &$form_state, $connection, $op) {
       '#default_value' => $connection['qwc_authflags'],
       '#required' => TRUE,
       '#description' => t('Flags for access to QB')
+    ),
+    'qbxml_version' => array(
+      '#type' => 'textfield',
+      '#title' => t('QBXML version'),
+      '#default_value' => $connection['qbxml_version'],
+      '#required' => TRUE,
+      '#description' => t('QBXML version number passed in header')
     ),
   );
   $form['buttons']['update'] = array(

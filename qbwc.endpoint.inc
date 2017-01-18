@@ -94,25 +94,24 @@ class qbwc_webconnector {
       $this->sendRequestXMLResult = ''; // do nothing
       return $this;
     }
-    else {
-      if ($sendRequestXML->strHCPResponse) {
-        $company = new SimpleXMLElement($sendRequestXML->strHCPResponse);
-        $connection['company'] = json_encode($company);
-        db_update('qbwc')
-          ->fields(array('company' => $connection['company']))
-          ->condition('endpoint', $endpoint)
-          ->condition('ticket', $ticket)
-          ->execute();
-      }
-      $company = json_decode($connection['company']);
+    if ($sendRequestXML->strHCPResponse) {
+      $connection['data'] = array( 'company' => new SimpleXMLElement($sendRequestXML->strHCPResponse) );
+      $connection['data'] = json_encode($connection['data']);
+      db_update('qbwc')
+        ->fields(array('data' => $connection['data']))
+        ->condition('endpoint', $endpoint)
+        ->condition('ticket', $ticket)
+        ->execute();
     }
+    $connectiondata = json_decode($connection['data']);
+
 
     // pass XML request to hook qbwc_sendRequestXML()
     if (sizeof(module_implements(QBWC_HOOK_SENDREQUEST)) > 0) {
       // Call all modules that implement the hook, and let them make changes to $variables.
-      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML, $company));
+      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML, $connectiondata));
       $this->sendRequestXMLResult = $ret ?
-        '<?xml version="1.0"?><?qbxml version="13.0"?>' . $ret :
+        '<?xml version="1.0"?><?qbxml version="' . $connection['qbxml_version'] . '"?>' . $ret :
         $ret;
     }
     else {
@@ -151,14 +150,14 @@ class qbwc_webconnector {
       return $this;
     }
 
-    $company = json_decode($connection['company']);
+    $connectiondata = json_decode($connection['data']);
 
     // send to hook qbwc_receiveResponseXML()
     if (sizeof(module_implements(QBWC_HOOK_RECEIVERESPONSE)) > 0) {
       // Call all modules that implement the hook
       $this->receiveResponseXMLResult = implode('',
         module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
-          $connection['bookid'], $receiveResponseXML, $company));
+          $connection['bookid'], $receiveResponseXML, $connectiondata));
     }
     else {
       watchdog('QBWC', 'QBWC:receiveResponseXML-nohook(' .

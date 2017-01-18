@@ -6,4 +6,3 @@ core = 7.x
 files[] = qbwc.inc
 
 configure = admin/config/enterprise/qbwc
-
