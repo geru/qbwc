@@ -99,7 +99,7 @@ function qbwc_schema() {
       'ticket' => array(
         'description' => 'existing ticket -- ssh-encoded session ID',
         'type' => 'varchar',
-        'length' => 64,
+        'length' => 36,
       ),
       'lasterr' => array(
         'description' => 'error, if applicable',
@@ -243,4 +243,17 @@ function qbwc_update_7200() {
   if( db_field_exists('qbwc', 'company') ) {
     db_drop_field('qbwc', 'company');
   }
+}
+
+/*
+ * Update db table for ticket to be 36-char UUID
+ */
+function qbwc_update_7201() {
+  $field = array(
+      'description' => 'existing ticket -- ssh-encoded session ID',
+      'type' => 'varchar',
+      'length' => 36,
+      'default' => NULL,
+  );
+  db_change_field('qbwc', 'ticket', 'ticket', $field);
 }
