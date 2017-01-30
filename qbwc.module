@@ -124,6 +124,8 @@ function qbwc_help($path, $arg) {
 function qbwc_hook_info() {
   $hooks[QBWC_HOOK_RECEIVERESPONSE] = array('group' => 'qbwc');
   $hooks[QBWC_HOOK_SENDREQUEST] = array('group' => 'qbwc');
+  $hooks[QBWC_HOOK_CLOSECONNECTION] = array('group' => 'qbwc');
+  $hooks[QBWC_HOOK_COMPANYINFO] = array('group' => 'qbwc');
   return ($hooks);
 }
 

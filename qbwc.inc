@@ -19,4 +19,5 @@ const QBWC_INT_ERR_TICKET_NULL = '34';
 // defined hooks
 const QBWC_HOOK_SENDREQUEST = 'qbwc_sendRequestXML';
 const QBWC_HOOK_RECEIVERESPONSE = 'qbwc_receiveResponseXML';
-const QBWC_HOOK_CLOSECONNECTION = 'qbwc_closeconnection';
+const QBWC_HOOK_CLOSECONNECTION = 'qbwc_closeConnection';
+const QBWC_HOOK_COMPANYINFO = 'qbwc_companyInfo';

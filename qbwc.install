@@ -169,6 +169,10 @@ function qbwc_schema() {
         'type' => 'varchar',
         'length' => 16,
       ),
+      'datahash' => array(
+        'description' => 'hash of extra data',
+        'type' => 'int'
+      ),
       'data' => array(
         'description' => 'All extraneous extra information in JSON-encoded array',
         'type' => 'blob',
@@ -248,12 +252,14 @@ function qbwc_update_7200() {
 /*
  * Update db table for ticket to be 36-char UUID
  */
-function qbwc_update_7201() {
-  $field = array(
-      'description' => 'existing ticket -- ssh-encoded session ID',
-      'type' => 'varchar',
-      'length' => 36,
-      'default' => NULL,
-  );
-  db_change_field('qbwc', 'ticket', 'ticket', $field);
+function qbwc_update_7203() {
+  db_change_field('qbwc', 'ticket', 'ticket', array(
+    'description' => 'existing ticket -- ssh-encoded session ID',
+    'type' => 'varchar',
+    'length' => 36,
+    'default' => NULL,
+  ));
+  db_add_field('qbwc', 'datahash', array(
+      'description' => 'crc of extra data',
+      'type' => 'int' ));
 }

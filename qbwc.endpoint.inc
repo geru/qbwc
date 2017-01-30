@@ -94,22 +94,29 @@ class qbwc_webconnector {
       $this->sendRequestXMLResult = ''; // do nothing
       return $this;
     }
+    $connection['data'] = json_decode($connection['data']);
     if ($sendRequestXML->strHCPResponse) {
-      $connection['data'] = array( 'company' => new SimpleXMLElement($sendRequestXML->strHCPResponse) );
-      $connection['data'] = json_encode($connection['data']);
-      db_update('qbwc')
-        ->fields(array('data' => $connection['data']))
-        ->condition('endpoint', $endpoint)
-        ->condition('ticket', $ticket)
-        ->execute();
+      $response = new SimpleXMLElement($sendRequestXML->strHCPResponse);
+      $data['host'] = $response->QBXMLMsgsRs->HostQueryRs->HostRet;
+      $data['company'] = $response->QBXMLMsgsRs->CompanyQueryRs->CompanyRet;
+      unset($data['company']->DataExtRet); // changes each time
+      $data['preferences'] = $response->QBXMLMsgsRs->PreferencesQueryRs->PreferencesRet;
+      $jsondata = json_encode($data);
+      $hash = crc32( $jsondata );
+      if( $connection['datahash'] != $hash ) {
+        db_update('qbwc')
+          ->condition('endpoint', $endpoint)
+          ->condition('ticket', $ticket)
+          ->fields( array('data' => $jsondata, 'datahash' => $hash))
+          ->execute();
+        module_invoke_all( QBWC_HOOK_COMPANYINFO, $connection['bookid'], $data );
+      }
     }
-    $connectiondata = json_decode($connection['data']);
-
-
+    
     // pass XML request to hook qbwc_sendRequestXML()
     if (sizeof(module_implements(QBWC_HOOK_SENDREQUEST)) > 0) {
       // Call all modules that implement the hook, and let them make changes to $variables.
-      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML, $connectiondata));
+      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML));
       $this->sendRequestXMLResult = $ret ?
         '<?xml version="1.0"?><?qbxml version="' . $connection['qbxml_version'] . '"?>' . $ret :
         $ret;
@@ -157,7 +164,7 @@ class qbwc_webconnector {
       // Call all modules that implement the hook
       $values = module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
         $connection['bookid'], $receiveResponseXML, $connectiondata);
-      $ret = 0;
+      $ret = 0; // this next loop is silly. Only one module should process the information and return a value. The loop checks in case multiple modules did it and tries to make sense of the results
       foreach( $values as $value ) {
         if( is_int($value) ) {
           $ret += $value;
