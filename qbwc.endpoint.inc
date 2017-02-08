@@ -22,6 +22,17 @@ function _qbwc_get_connection_by_ticket($endpoint, $ticket = NULL) {
   );
 }
 
+function _qbwc_int_convert( $unsigned ) {
+  if (PHP_INT_SIZE == 8)
+  {
+    if ($unsigned>0x7FFFFFFF)
+    {
+      $unsigned -= 0x100000000;
+    }
+  }
+  return $unsigned;
+}
+
 class qbwc_webconnector {
   public function serverVersion() {
     $this->serverVersionResult = '2.0';
@@ -102,7 +113,7 @@ class qbwc_webconnector {
       unset($data['company']->DataExtRet); // changes each time
       $data['preferences'] = $response->QBXMLMsgsRs->PreferencesQueryRs->PreferencesRet;
       $jsondata = json_encode($data);
-      $hash = crc32( $jsondata );
+      $hash = _qbwc_int_convert( crc32( $jsondata ) );
       if( $connection['datahash'] != $hash ) {
         db_update('qbwc')
           ->condition('endpoint', $endpoint)
