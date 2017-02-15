@@ -9,22 +9,18 @@ require_once 'qbwc.inc';
 /**
  * Implements hook_requirements()
  */
-function qbwc_requirements()
-{
-  $requirements = array();
-  // Ensure translations do not break at install time
-  $t = get_t();
+function qbwc_requirements( $phase )
+{ $requirements = array();
 
-  $requirements['qbwc'] = array(
-    'title' => $t('qbwc'),
-  );
-
-  global $base_url;
-
-  if(!(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' || stristr($base_url, 'localhost'))) {
-    $requirements['qbwc']['value'] = $t('Not Installed');
-    $requirements['qbwc']['severity'] = REQUIREMENT_ERROR;
-    $requirements['qbwc']['description'] = $t('Quickbooks Webconnector requires secure connection. You must your Drupal site set up as HTTPS. For testing purposes ONLY, you may bypass this by putting the word "localhost" in your site name. Please correct and try again.');
+  if( $phase == 'install' ) {
+    // Ensure translations do not break at install time
+    global $base_url;
+    if (!(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' || stristr($base_url, 'localhost'))) {
+      $t = get_t();
+      $requirements['qbwc']['title'] = $t('QBWC');
+      $requirements['qbwc']['severity'] = REQUIREMENT_ERROR;
+      $requirements['qbwc']['description'] = $t('Quickbooks Webconnector requires secure connection. You must your Drupal site set up as HTTPS. For testing purposes ONLY, you may bypass this by putting the word "localhost" in your site name. Please correct and try again.');
+    }
   }
   return $requirements;
 }
