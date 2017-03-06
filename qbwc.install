@@ -18,7 +18,7 @@ function qbwc_requirements( $phase )
     if (!(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' || stristr($base_url, 'localhost'))) {
       $t = get_t();
       $requirements['qbwc']['title'] = $t('QBWC');
-      $requirements['qbwc']['severity'] = REQUIREMENT_ERROR;
+      $requirements['qbwc']['severity'] = REQUIREMENT_WARNING;
       $requirements['qbwc']['description'] = $t('Quickbooks Webconnector requires secure connection. You must your Drupal site set up as HTTPS. For testing purposes ONLY, you may bypass this by putting the word "localhost" in your site name. Please correct and try again.');
     }
   }
