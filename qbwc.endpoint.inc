@@ -80,7 +80,7 @@ class qbwc_webconnector {
    * sendRequestXML() is called when the Quickbooks Webconnector is requesting a
    * QBXML query. This is a key entryway to Drupal and is the point at which one
    * of the two hooks provided by the qbwc API gets triggered. This hook,
-   * identified by the QBWC_HOOK_SENDREQUEST constant is documented in the qbwc
+   * identified by the string 'qbwc_sendRequestXML' is documented in the qbwc
    * API documentation.
    *
    * This function is the point at which the Drupal Soap server is asked to turn
@@ -120,14 +120,14 @@ class qbwc_webconnector {
           ->condition('ticket', $ticket)
           ->fields( array('data' => $jsondata, 'datahash' => $hash))
           ->execute();
-        module_invoke_all( QBWC_HOOK_COMPANYINFO, $connection['bookid'], $data );
+        module_invoke_all( 'qbwc_companyInfo', $connection['bookid'], $data );
       }
     }
     
     // pass XML request to hook qbwc_sendRequestXML()
-    if (sizeof(module_implements(QBWC_HOOK_SENDREQUEST)) > 0) {
+    if (sizeof(module_implements('qbwc_sendRequestXML')) > 0) {
       // Call all modules that implement the hook, and let them make changes to $variables.
-      $ret = implode('', module_invoke_all(QBWC_HOOK_SENDREQUEST, $connection['bookid'], $sendRequestXML));
+      $ret = implode('', module_invoke_all('qbwc_sendRequestXML', $connection['bookid'], $sendRequestXML));
       $this->sendRequestXMLResult = $ret ?
         '<?xml version="1.0"?><?qbxml version="' . $connection['qbxml_version'] . '"?>' . $ret :
         $ret;
@@ -140,8 +140,8 @@ class qbwc_webconnector {
 
   /**
    * receiveResponseXML() is the second of two access points between Drupal and
-   * the Quickbooks Webconnector. The hook identified by the constant
-   * QBWC_HOOK_RECEIVERESPONSE is triggered here and is documented within the
+   * the Quickbooks Webconnector. The hook identified by the string
+   * 'qbwc_receiveResponseXML' is triggered here and is documented within the
    * qbwc API documentation.
    *
    * Once again, this is the point at which the Drupal installation is asked to
@@ -171,9 +171,9 @@ class qbwc_webconnector {
     $connectiondata = json_decode($connection['data']);
 
     // send to hook qbwc_receiveResponseXML()
-    if (sizeof(module_implements(QBWC_HOOK_RECEIVERESPONSE)) > 0) {
+    if (sizeof(module_implements('qbwc_receiveResponseXML')) > 0) {
       // Call all modules that implement the hook
-      $values = module_invoke_all(QBWC_HOOK_RECEIVERESPONSE,
+      $values = module_invoke_all('qbwc_receiveResponseXML',
         $connection['bookid'], $receiveResponseXML, $connectiondata);
       $ret = 0; // this next loop is silly. Only one module should process the information and return a value. The loop checks in case multiple modules did it and tries to make sense of the results
       foreach( $values as $value ) {
@@ -219,10 +219,10 @@ class qbwc_webconnector {
     $this->closeConnectionResult = '';
 
     if ($connection = _qbwc_get_connection_by_ticket($_GET['q'], $closeConnection->ticket)) {
-      if (sizeof(module_implements(QBWC_HOOK_CLOSECONNECTION)) > 0) {
+      if (sizeof(module_implements('qbwc_closeConnection')) > 0) {
         // Call all modules that implement the close connection hook
         $this->closeConnectionResult = implode('',
-          module_invoke_all(QBWC_HOOK_CLOSECONNECTION, $connection['bookid'], $closeConnection));
+          module_invoke_all('qbwc_closeConnection', $connection['bookid'], $closeConnection));
       }
       db_update('qbwc')->fields(array('ticket' => NULL))
         ->condition('endpoint', $connection['endpoint'])
@@ -246,7 +246,7 @@ function qbwc_endpoint() {
 
   try {
     // ini_set("soap.wsdl_cache_enabled", "0"); // turn off cache when changing wsdl file
-    $server = new \SoapServer($base_url . '/' . $_GET['q'] . QBWC_EXT_WSDL);
+    $server = new \SoapServer($base_url . '/' . $_GET['q'] . '.wsdl');
     $server->setClass('qbwc_webconnector');
     qbwc_ob_reset();
     $server->handle();
